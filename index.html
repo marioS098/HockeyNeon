@@ -12,6 +12,7 @@
     --pink:#ff2bd6;
     --lime:#a6ff00;
     --white:#eefcff;
+    --gold:#ffd700;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{
@@ -31,8 +32,30 @@
   }
   canvas{width:100%;height:100%;display:block;}
   .hud{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:2;}
+  
+  .hudTopRow{
+    position:absolute;top:10px;left:10px;right:10px;
+    display:flex;justify-content:space-between;align-items:center;
+    pointer-events:none;z-index:2;
+  }
+  .hudBadge{
+    background:rgba(4,8,22,0.85);border:1px solid rgba(0,229,255,0.4);
+    border-radius:999px;padding:6px 14px;font-size:clamp(11px,1.3vw,15px);
+    font-weight:700;color:var(--cyan);backdrop-filter:blur(8px);
+    box-shadow:0 0 12px rgba(0,229,255,0.22);white-space:nowrap;pointer-events:auto;cursor:pointer;
+    transition:transform 0.15s, border-color 0.2s;
+  }
+  .hudBadge:hover{transform:scale(1.04);}
+  
+  .hudPts{
+    background:rgba(4,8,22,0.85);border:1px solid rgba(255,215,0,0.45);
+    border-radius:999px;padding:6px 14px;font-size:clamp(11px,1.3vw,15px);
+    font-weight:800;color:#ffd700;backdrop-filter:blur(8px);
+    box-shadow:0 0 14px rgba(255,215,0,0.25);white-space:nowrap;
+  }
+
   .scoreboard{
-    position:absolute;top:10px;left:50%;transform:translateX(-50%);
+    position:relative;
     display:flex;align-items:center;gap:12px;
     background:rgba(4,8,22,0.78);border:1px solid rgba(0,229,255,0.35);
     border-radius:999px;padding:6px 20px;backdrop-filter:blur(8px);
@@ -45,30 +68,108 @@
   .score.g1{color:var(--cyan)}
   .score.g2{color:var(--pink)}
   .scoreDivider{font-size:clamp(14px,2vw,22px);color:rgba(255,255,255,0.35);font-weight:700;}
+
   .overlay{
     position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:3;
-    min-width:min(88vw,520px);max-width:90%;text-align:center;
-    background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.14);border-radius:18px;
-    padding:18px 22px;backdrop-filter:blur(10px);box-shadow:0 0 22px rgba(0,229,255,.2);
+    min-width:min(88vw,540px);max-width:92%;max-height:90vh;overflow-y:auto;text-align:center;
+    background:rgba(2,6,18,.88);border:1px solid rgba(0,229,255,.3);border-radius:20px;
+    padding:20px 22px;backdrop-filter:blur(14px);box-shadow:0 0 30px rgba(0,229,255,.25);
   }
-  .overlay h1{margin:0 0 10px;font-size:clamp(26px,4vw,52px);color:var(--cyan);text-shadow:0 0 14px var(--cyan),0 0 30px var(--cyan);}
-  .overlay p{margin:6px 0;font-size:clamp(13px,1.6vw,20px);color:#d9f7ff;}
+  .overlay::-webkit-scrollbar{width:6px;}
+  .overlay::-webkit-scrollbar-thumb{background:rgba(0,229,255,0.4);border-radius:3px;}
+
+  .overlay h1{margin:0 0 8px;font-size:clamp(24px,3.8vw,48px);color:var(--cyan);text-shadow:0 0 14px var(--cyan),0 0 30px var(--cyan);}
+  .overlay p{margin:6px 0;font-size:clamp(12px,1.5vw,18px);color:#d9f7ff;}
   .btnRow{margin-top:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;pointer-events:auto;}
   button{
-    border:none;border-radius:999px;padding:12px 18px;font-size:16px;font-weight:700;cursor:pointer;
+    border:none;border-radius:999px;padding:12px 20px;font-size:15px;font-weight:700;cursor:pointer;
     color:#03131f;background:linear-gradient(90deg,var(--cyan),#8af5ff);box-shadow:0 0 12px rgba(0,229,255,.45);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
   button:active{transform:scale(0.96);}
   button.alt{background:linear-gradient(90deg,var(--pink),#ff9af0);box-shadow:0 0 12px rgba(255,43,214,.45);}
   button.green{background:linear-gradient(90deg,var(--lime),#d4ff80);box-shadow:0 0 12px rgba(166,255,0,.45);}
+  button.gold{background:linear-gradient(90deg,#ffd700,#fff080);box-shadow:0 0 12px rgba(255,215,0,.5);color:#1a1400;}
+
   .note{
     position:absolute;bottom:8px;left:50%;transform:translateX(-50%);z-index:2;text-align:center;
     font-size:clamp(11px,1.3vw,16px);color:rgba(234,252,255,.7);padding:0 10px;pointer-events:none;
   }
   .hidden{display:none}
-  .modeBtns{display:flex;flex-direction:column;gap:10px;align-items:center;margin-top:10px;pointer-events:auto;}
-  .modeBtns button{font-size:17px;padding:13px 26px;min-width:230px;}
+  .modeBtns{display:flex;flex-direction:column;gap:10px;align-items:center;margin-top:12px;pointer-events:auto;}
+  .modeBtns button{font-size:16px;padding:12px 24px;min-width:240px;}
+
+  /* Post Match & Profile Styles */
+  .pmStatsGrid{
+    display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:12px 0;text-align:left;
+  }
+  .pmStatCard{
+    background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);
+    border-radius:10px;padding:8px 12px;display:flex;justify-content:space-between;
+    font-size:clamp(11px,1.3vw,14px);font-weight:700;color:#eefcff;
+  }
+  .pmStatCard span:last-child{color:var(--cyan);font-weight:800;}
+
+  .pmXPSection{
+    background:rgba(4,8,22,0.75);border:1px solid rgba(0,229,255,0.3);
+    border-radius:14px;padding:12px;margin:10px 0;
+  }
+  .pmXPHeader{display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,0.7);}
+  .pmXPTotal{font-size:clamp(16px,2.2vw,24px);font-weight:900;color:#ffd700;margin:6px 0;text-shadow:0 0 12px rgba(255,215,0,0.5);}
+  .pmXPBarWrap{
+    width:100%;height:14px;background:rgba(255,255,255,0.1);border-radius:999px;
+    overflow:hidden;margin:6px 0;border:1px solid rgba(0,229,255,0.25);position:relative;
+  }
+  .pmXPBarFill{
+    height:100%;background:linear-gradient(90deg,var(--cyan),#ffd700);
+    border-radius:999px;transition:width 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow:0 0 10px var(--cyan);
+  }
+  .pmXPBarLabels{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:#eefcff;}
+
+  .levelUpBanner{
+    background:linear-gradient(135deg,rgba(255,43,214,0.35),rgba(0,229,255,0.35));
+    border:2px solid #ffd700;border-radius:14px;padding:12px;margin:12px 0;
+    animation:pulseGlow 1.5s infinite alternate;
+  }
+  @keyframes pulseGlow{
+    0%{box-shadow:0 0 10px rgba(255,215,0,0.4);}
+    100%{box-shadow:0 0 25px rgba(255,215,0,0.9);}
+  }
+  .luTitle{font-size:15px;font-weight:900;color:#ffd700;letter-spacing:1px;}
+  .luBadge{font-size:22px;font-weight:800;color:#fff;margin:4px 0;}
+  .luUnlockText{font-size:12px;color:#d9f7ff;}
+
+  .profileSection{
+    background:rgba(4,8,22,0.8);border:1px solid rgba(0,229,255,0.3);
+    border-radius:14px;padding:14px;margin-bottom:12px;text-align:left;
+  }
+  .profileHeader{display:flex;align-items:center;gap:12px;}
+  .profileAvatar{font-size:36px;}
+  .profileInfo{flex:1;}
+  .profileInfo h2{margin:0;font-size:18px;color:var(--cyan);}
+  .profileInfo p{margin:2px 0 0;font-size:12px;color:rgba(238,252,255,0.7);}
+
+  .lvlList{display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;margin-top:10px;padding-right:4px;}
+  .lvlItem{
+    display:flex;align-items:center;justify-content:space-between;
+    background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+    border-radius:10px;padding:8px 12px;font-size:13px;
+  }
+  .lvlItem.unlocked{background:rgba(0,229,255,0.08);border-color:rgba(0,229,255,0.3);}
+  .lvlItem.active{background:rgba(255,215,0,0.15);border-color:#ffd700;}
+
+  .garageGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-top:10px;}
+  .garageItem{
+    background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);
+    border-radius:12px;padding:10px;text-align:center;cursor:pointer;
+    transition:transform 0.15s, border-color 0.15s;pointer-events:auto;
+  }
+  .garageItem:hover{transform:scale(1.03);}
+  .garageItem.selected{border-color:#ffd700;box-shadow:0 0 12px rgba(255,215,0,0.4);background:rgba(255,215,0,0.12);}
+  .garageItem.locked{opacity:0.55;cursor:not-allowed;filter:grayscale(0.5);}
+  .garageItemTitle{font-size:12px;font-weight:700;margin-top:4px;}
+  .garageItemSub{font-size:10px;opacity:0.75;}
 </style>
 </head>
 <body>
@@ -76,10 +177,14 @@
   <div id="game">
     <canvas id="c"></canvas>
     <div class="hud">
-      <div class="scoreboard" id="scoreboardBox">
-        <div class="score g2" id="scoreG2El">CPU (Medio) 0</div>
-        <div class="scoreDivider">-</div>
-        <div class="score g1" id="scoreG1El">0 TU</div>
+      <div class="hudTopRow">
+        <div class="hudBadge" id="hudBadge" title="Clicca per aprire Profilo e Livelli">💙 Lv.1 Neon Blu</div>
+        <div class="scoreboard" id="scoreboardBox">
+          <div class="score g2" id="scoreG2El">CPU (Medio) 0</div>
+          <div class="scoreDivider">-</div>
+          <div class="score g1" id="scoreG1El">0 TU</div>
+        </div>
+        <div class="hudPts" id="hudPtsBox"><span id="hudPtsVal">0</span> <span style="font-size:0.75em;opacity:0.85;">PTS</span></div>
       </div>
     </div>
     <div id="overlay" class="overlay">
@@ -88,7 +193,8 @@
       <div class="modeBtns">
         <button id="btn1p">1 Giocatore (vs CPU)</button>
         <button id="btn2p" class="alt">2 Giocatori</button>
-        <button id="colorBtn" style="background:linear-gradient(90deg,#00e5ff,#8af5ff);color:#03131f;">🎨 Colore: Cyan</button>
+        <button id="profileBtn" class="gold">🏆 Profilo & Livelli</button>
+        <button id="colorBtn">🎨 Personalizza Neon</button>
         <button id="audioBtn" class="green">Audio: ON</button>
       </div>
     </div>
@@ -104,11 +210,13 @@
   const scoreG1El = document.getElementById('scoreG1El');
   const scoreG2El = document.getElementById('scoreG2El');
   const scoreboardBox = document.getElementById('scoreboardBox');
+  const hudBadgeEl = document.getElementById('hudBadge');
+  const hudPtsValEl = document.getElementById('hudPtsVal');
 
   let W=1200,H=700;
   let DPR=Math.max(1,Math.min(2,window.devicePixelRatio||1));
   let running=false, isPaused=false, audioEnabled=true, lastTime=0, flash=0;
-  let particles=[], portrait=false;
+  let particles=[], floatingTexts=[], g1Trail=[], g2Trail=[], portrait=false;
   let gameMode=null;
   const pointerOwners = new Map();
 
@@ -125,14 +233,150 @@
   let isRetreating = false;
   let retreatTimer = 0;
 
+  // 10 NEON LEVELS SYSTEM
+  const LEVELS = [
+    { level: 1, name: 'Neon Blu', xp: 0, color: '#00e5ff', glow: 'rgba(0,229,255,0.6)', badge: '💙', themeKey: 'cyan', skin: 'classic', trail: 'cyan_spark' },
+    { level: 2, name: 'Neon Viola', xp: 300, color: '#b537ff', glow: 'rgba(181,55,255,0.6)', badge: '💜', themeKey: 'purple', skin: 'violet_pulse', trail: 'purple_pulse' },
+    { level: 3, name: 'Neon Rosa', xp: 700, color: '#ff2bd6', glow: 'rgba(255,43,214,0.6)', badge: '🩷', themeKey: 'pink', skin: 'pink_star', trail: 'pink_sparkle' },
+    { level: 4, name: 'Neon Verde', xp: 1200, color: '#a6ff00', glow: 'rgba(166,255,0,0.6)', badge: '💚', themeKey: 'lime', skin: 'lime_bolt', trail: 'lime_bolt' },
+    { level: 5, name: 'Neon Arancione', xp: 1800, color: '#ff8800', glow: 'rgba(255,136,0,0.6)', badge: '🧡', themeKey: 'orange', skin: 'fire_ember', trail: 'fire_ember' },
+    { level: 6, name: 'Neon Rosso', xp: 2500, color: '#ff2255', glow: 'rgba(255,34,85,0.6)', badge: '🔴', themeKey: 'red', skin: 'red_crest', trail: 'red_nova' },
+    { level: 7, name: 'Neon Oro', xp: 3500, color: '#ffd700', glow: 'rgba(255,215,0,0.6)', badge: '👑', themeKey: 'gold', skin: 'golden_crown', trail: 'gold_glitter' },
+    { level: 8, name: 'Neon Plasma', xp: 5000, color: '#00ffcc', glow: 'rgba(0,255,204,0.6)', badge: '⚡', themeKey: 'plasma', skin: 'plasma_core', trail: 'plasma_wave' },
+    { level: 9, name: 'Neon Ultra', xp: 7000, color: '#ff00ff', glow: 'rgba(255,0,255,0.6)', badge: '🌌', themeKey: 'ultra', skin: 'ultra_aura', trail: 'ultra_aura' },
+    { level: 10, name: 'Neon Leggendario', xp: 10000, color: '#ffffff', glow: 'rgba(255,255,255,0.8)', badge: '🐉', themeKey: 'legendary', skin: 'legend_dragon', trail: 'legend_rainbow' }
+  ];
+
   const playerThemes = {
-    cyan: { name: '🩵 Cyan', color: '#00e5ff', glow: 'rgba(0,229,255,0.6)', bg: 'radial-gradient(circle at 50% 50%,rgba(0,229,255,.14),transparent 45%), linear-gradient(180deg,rgba(0,229,255,.03),rgba(0,229,255,.01)), linear-gradient(180deg,#0a1430,#040816)' },
-    lime: { name: '💚 Lime', color: '#a6ff00', glow: 'rgba(166,255,0,0.6)', bg: 'radial-gradient(circle at 50% 50%,rgba(166,255,0,.14),transparent 45%), linear-gradient(180deg,rgba(166,255,0,.03),rgba(166,255,0,.01)), linear-gradient(180deg,#0e2608,#040e02)' },
-    orange: { name: '🧡 Arancio', color: '#ff8800', glow: 'rgba(255,136,0,0.6)', bg: 'radial-gradient(circle at 50% 50%,rgba(255,136,0,.14),transparent 45%), linear-gradient(180deg,rgba(255,136,0,.03),rgba(255,136,0,.01)), linear-gradient(180deg,#2b1104,#0f0501)' },
-    purple: { name: '💜 Viola', color: '#b537ff', glow: 'rgba(181,55,255,0.6)', bg: 'radial-gradient(circle at 50% 50%,rgba(181,55,255,.14),transparent 45%), linear-gradient(180deg,rgba(181,55,255,.03),rgba(181,55,255,.01)), linear-gradient(180deg,#1c092b,#0a0212)' },
-    yellow: { name: '💛 Giallo', color: '#ffe600', glow: 'rgba(255,230,0,0.6)', bg: 'radial-gradient(circle at 50% 50%,rgba(255,230,0,.14),transparent 45%), linear-gradient(180deg,rgba(255,230,0,.03),rgba(255,230,0,.01)), linear-gradient(180deg,#242104,#0e0d01)' }
+    cyan: { name: '🩵 Neon Blu', reqLevel: 1, reqXP: 0, color: '#00e5ff', glow: 'rgba(0,229,255,0.6)', bg: 'radial-gradient(circle at 50% 50%,rgba(0,229,255,.14),transparent 45%), linear-gradient(180deg,rgba(0,229,255,.03),rgba(0,229,255,.01)), linear-gradient(180deg,#0a1430,#040816)' },
+    purple: { name: '💜 Neon Viola', reqLevel: 2, reqXP: 300, color: '#b537ff', glow: 'rgba(181,55,255,0.6)', bg: 'radial-gradient(circle at 50% 50%,rgba(181,55,255,.14),transparent 45%), linear-gradient(180deg,rgba(181,55,255,.03),rgba(181,55,255,.01)), linear-gradient(180deg,#1c092b,#0a0212)' },
+    pink: { name: '🩷 Neon Rosa', reqLevel: 3, reqXP: 700, color: '#ff2bd6', glow: 'rgba(255,43,214,0.6)', bg: 'radial-gradient(circle at 50% 50%,rgba(255,43,214,.14),transparent 45%), linear-gradient(180deg,rgba(255,43,214,.03),rgba(255,43,214,.01)), linear-gradient(180deg,#2b0422,#12010e)' },
+    lime: { name: '💚 Neon Verde', reqLevel: 4, reqXP: 1200, color: '#a6ff00', glow: 'rgba(166,255,0,0.6)', bg: 'radial-gradient(circle at 50% 50%,rgba(166,255,0,.14),transparent 45%), linear-gradient(180deg,rgba(166,255,0,.03),rgba(166,255,0,.01)), linear-gradient(180deg,#0e2608,#040e02)' },
+    orange: { name: '🧡 Neon Arancio', reqLevel: 5, reqXP: 1800, color: '#ff8800', glow: 'rgba(255,136,0,0.6)', bg: 'radial-gradient(circle at 50% 50%,rgba(255,136,0,.14),transparent 45%), linear-gradient(180deg,rgba(255,136,0,.03),rgba(255,136,0,.01)), linear-gradient(180deg,#2b1104,#0f0501)' },
+    red: { name: '🔴 Neon Rosso', reqLevel: 6, reqXP: 2500, color: '#ff2255', glow: 'rgba(255,34,85,0.6)', bg: 'radial-gradient(circle at 50% 50%,rgba(255,34,85,.14),transparent 45%), linear-gradient(180deg,rgba(255,34,85,.03),rgba(255,34,85,.01)), linear-gradient(180deg,#2d030c,#120105)' },
+    gold: { name: '👑 Neon Oro', reqLevel: 7, reqXP: 3500, color: '#ffd700', glow: 'rgba(255,215,0,0.6)', bg: 'radial-gradient(circle at 50% 50%,rgba(255,215,0,.14),transparent 45%), linear-gradient(180deg,rgba(255,215,0,.03),rgba(255,215,0,.01)), linear-gradient(180deg,#2b2304,#120e01)' },
+    plasma: { name: '⚡ Neon Plasma', reqLevel: 8, reqXP: 5000, color: '#00ffcc', glow: 'rgba(0,255,204,0.6)', bg: 'radial-gradient(circle at 50% 50%,rgba(0,255,204,.14),transparent 45%), linear-gradient(180deg,rgba(0,255,204,.03),rgba(0,255,204,.01)), linear-gradient(180deg,#042828,#011212)' },
+    ultra: { name: '🌌 Neon Ultra', reqLevel: 9, reqXP: 7000, color: '#ff00ff', glow: 'rgba(255,0,255,0.6)', bg: 'radial-gradient(circle at 50% 50%,rgba(255,0,255,.14),transparent 45%), linear-gradient(180deg,rgba(255,0,255,.03),rgba(255,0,255,.01)), linear-gradient(180deg,#290029,#120012)' },
+    legendary: { name: '🐉 Neon Leggendario', reqLevel: 10, reqXP: 10000, color: '#ffffff', glow: 'rgba(255,255,255,0.8)', bg: 'radial-gradient(circle at 50% 50%,rgba(255,255,255,.18),transparent 45%), linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02)), linear-gradient(180deg,#222533,#090a12)' }
   };
+
   let selectedThemeKey = 'cyan';
+  let equippedSkin = 'classic';
+
+  // PERSISTENCE HELPERS
+  function getStoredXP(){
+    const saved = localStorage.getItem('hockeyneon_xp');
+    return saved ? parseInt(saved, 10) || 0 : 0;
+  }
+  function addXP(amount){
+    const prev = getStoredXP();
+    const next = Math.max(0, prev + amount);
+    localStorage.setItem('hockeyneon_xp', next);
+    return { prev, next };
+  }
+  function getLevelInfo(xp){
+    let currentLvl = LEVELS[0];
+    for(let i=0; i<LEVELS.length; i++){
+      if(xp >= LEVELS[i].xp) currentLvl = LEVELS[i];
+      else break;
+    }
+    const idx = LEVELS.findIndex(l => l.level === currentLvl.level);
+    const nextLvl = LEVELS[idx + 1] || null;
+    let progress = 1;
+    if(nextLvl){
+      progress = Math.min(1, Math.max(0, (xp - currentLvl.xp) / (nextLvl.xp - currentLvl.xp)));
+    }
+    return { currentLevel: currentLvl, nextLevel: nextLvl, progress, index: idx };
+  }
+
+  // OFFICIAL MATCH SCORING STATE
+  const matchScoreState = {
+    pts: 0,
+    goals: 0,
+    longGoals: 0,
+    fastGoals: 0,
+    bounceGoals: 0,
+    decisiveGoal: false,
+    saves: 0,
+    recoveries: 0,
+    heavyCollisions: 0,
+    puckLosses: 0,
+    maxDeficit: 0,
+    lastHitBy: null,
+    lastG1HitTime: 0,
+    lastG1HitPos: { x: 0, y: 0 },
+    bouncesSinceG1Hit: 0,
+    lastPuckLossTime: 0,
+    lastHeavyCollisionTime: 0
+  };
+
+  function resetMatchScoreState(){
+    matchScoreState.pts = 0;
+    matchScoreState.goals = 0;
+    matchScoreState.longGoals = 0;
+    matchScoreState.fastGoals = 0;
+    matchScoreState.bounceGoals = 0;
+    matchScoreState.decisiveGoal = false;
+    matchScoreState.saves = 0;
+    matchScoreState.recoveries = 0;
+    matchScoreState.heavyCollisions = 0;
+    matchScoreState.puckLosses = 0;
+    matchScoreState.maxDeficit = 0;
+    matchScoreState.lastHitBy = null;
+    matchScoreState.lastG1HitTime = 0;
+    matchScoreState.lastG1HitPos = { x: W/2, y: H/2 };
+    matchScoreState.bouncesSinceG1Hit = 0;
+    matchScoreState.lastPuckLossTime = 0;
+    matchScoreState.lastHeavyCollisionTime = 0;
+    updateHUDPoints();
+  }
+
+  function updateHUDPoints(){
+    if(hudPtsValEl) hudPtsValEl.textContent = matchScoreState.pts;
+    const playerXP = getStoredXP();
+    const lvlInfo = getLevelInfo(playerXP);
+    if(hudBadgeEl){
+      hudBadgeEl.textContent = `${lvlInfo.currentLevel.badge} Lv.${lvlInfo.currentLevel.level} ${lvlInfo.currentLevel.name}`;
+      hudBadgeEl.style.borderColor = lvlInfo.currentLevel.color;
+      hudBadgeEl.style.color = lvlInfo.currentLevel.color;
+    }
+  }
+
+  // FLOATING TEXT NOTIFICATIONS
+  function addFloatingText(x, y, text, color, scale = 1){
+    floatingTexts.push({
+      x, y, text, color,
+      life: 1.35, maxLife: 1.35,
+      vy: 34, scale
+    });
+  }
+  function updateFloatingTexts(dt){
+    for(let i = floatingTexts.length - 1; i >= 0; i--){
+      const ft = floatingTexts[i];
+      ft.life -= dt;
+      ft.y -= ft.vy * dt;
+      if(ft.life <= 0) floatingTexts.splice(i, 1);
+    }
+  }
+  function drawFloatingTexts(){
+    for(const ft of floatingTexts){
+      const alpha = Math.min(1, ft.life / (ft.maxLife * 0.35));
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, alpha);
+      const size = Math.round(Math.min(W, H) * 0.038 * ft.scale);
+      ctx.font = '900 ' + Math.max(14, size) + 'px Arial, Helvetica, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowColor = ft.color;
+      ctx.shadowBlur = 14;
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeStyle = ft.color;
+      ctx.lineWidth = 3.5;
+      ctx.strokeText(ft.text, ft.x, ft.y);
+      ctx.fillText(ft.text, ft.x, ft.y);
+      ctx.restore();
+    }
+  }
 
   const puck = { x:0,y:0,vx:0,vy:0,r:16 };
   const g1Paddle = { x:0,y:0,tx:0,ty:0,vx:0,vy:0,r:38,speed:18 }; 
@@ -161,13 +405,16 @@
   function playScoreGood(){ beep(660,.07,'sawtooth',.03,120); setTimeout(()=>beep(840,.08,'triangle',.025,60),60); }
   function playScoreBad(){ beep(180,.12,'square',.035,-100); setTimeout(()=>beep(120,.12,'triangle',.025,-40),70); }
   function playWin(){ beep(520,.08,'triangle',.025,80); setTimeout(()=>beep(740,.08,'triangle',.025,100),90); setTimeout(()=>beep(980,.14,'triangle',.03,0),180); }
+  function playPointGain(){ beep(740,.05,'triangle',.035,100); setTimeout(()=>beep(1020,.07,'sine',.03,50),40); }
+  function playPenalty(){ beep(180,.08,'sawtooth',.04,-40); setTimeout(()=>beep(130,.1,'square',.035,-20),50); }
+  function playLevelUpFanfare(){ beep(520,.08,'triangle',.04,100); setTimeout(()=>beep(660,.08,'triangle',.04,120),80); setTimeout(()=>beep(880,.1,'triangle',.045,140),160); setTimeout(()=>beep(1170,.25,'sine',.05,0),260); }
 
   function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
   function norm(x,y){ const d=Math.hypot(x,y)||1; return {x:x/d,y:y/d}; }
   function isPortrait(){ return window.innerHeight>window.innerWidth; }
 
   function applyRinkTheme(){
-    const theme = playerThemes[selectedThemeKey];
+    const theme = playerThemes[selectedThemeKey] || playerThemes.cyan;
     gameEl.style.background = theme.bg;
     gameEl.style.borderColor = theme.color;
     gameEl.style.boxShadow = '0 0 16px '+theme.glow+', 0 0 36px rgba(0,0,0,0.4), inset 0 0 20px '+theme.glow;
@@ -187,6 +434,7 @@
     canvas.width=Math.round(W*DPR); canvas.height=Math.round(H*DPR);
     ctx.setTransform(DPR,0,0,DPR,0,0);
     applyRinkTheme();
+    updateHUDPoints();
     if(!running) resetPositions(false);
   }
 
@@ -202,6 +450,7 @@
     g1Paddle.vx=g1Paddle.vy=g2Paddle.vx=g2Paddle.vy=0;
     puck.x=W/2; puck.y=H/2; puck.vx=0; puck.vy=0;
     stuckTimer=0; stuckNudgeTimer=0; isRetreating=false; retreatTimer=0;
+    g1Trail = []; g2Trail = [];
   }
 
   function launchPuck(serveToG2){
@@ -242,8 +491,8 @@
   function addParticles(x,y,color,count){
     count=count||14;
     for(let i=0;i<count;i++){
-      const a=Math.random()*Math.PI*2, s=1+Math.random()*4;
-      particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:18+Math.random()*18,maxLife:18+Math.random()*18,color});
+      const a=Math.random()*Math.PI*2, s=1+Math.random()*4.5;
+      particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:18+Math.random()*20,maxLife:18+Math.random()*20,color});
     }
   }
 
@@ -270,7 +519,7 @@
 
       const pushAlong = Math.max(0, pad.vx*n.x + pad.vy*n.y);
       puck.vx += n.x * pushAlong * 0.18 + t.x * (pad.vx*t.x + pad.vy*t.y) * 0.08;
-      puck.vy += n.y * pushAlong * 0.18 + t.y * (pad.vx*t.x + pad.vy*t.y) * 0.08;
+      puck.vy += n.y * pushAlong * 0.18 + t.y * (pad.vx*t.y + pad.vy*t.y) * 0.08;
 
       let sp=Math.hypot(puck.vx,puck.vy);
       const minSpeed=Math.max(W,H)*0.34;
@@ -279,6 +528,49 @@
       if(sp>maxSpeed){ puck.vx=puck.vx/sp*maxSpeed; puck.vy=puck.vy/sp*maxSpeed; sp=maxSpeed; }
 
       playHit(sp/100); addParticles(puck.x,puck.y,color,18); flash=4;
+
+      // DEFENSE & RECOVERY ACTION DETECTION
+      if(pad === g1Paddle){
+        const inDefensiveHalf = portrait ? (g1Paddle.y > H/2) : (g1Paddle.x > W/2);
+        const headingToGoal = portrait ? (puck.vy > 90) : (puck.vx > 90);
+
+        if(matchScoreState.lastHitBy === 'g2' && inDefensiveHalf){
+          if(headingToGoal){
+            // PARATA (+30)
+            matchScoreState.pts += 30;
+            matchScoreState.saves++;
+            addFloatingText(g1Paddle.x, g1Paddle.y - 30, '+30 PARATA!', '#00e5ff', 1.15);
+            playPointGain();
+          } else {
+            // RECUPERO DISCO (+20)
+            matchScoreState.pts += 20;
+            matchScoreState.recoveries++;
+            addFloatingText(g1Paddle.x, g1Paddle.y - 30, '+20 RECUPERO!', '#a6ff00', 1.1);
+            playPointGain();
+          }
+          updateHUDPoints();
+        }
+
+        matchScoreState.lastHitBy = 'g1';
+        matchScoreState.lastG1HitTime = performance.now();
+        matchScoreState.lastG1HitPos = { x: g1Paddle.x, y: g1Paddle.y };
+        matchScoreState.bouncesSinceG1Hit = 0;
+      } else if(pad === g2Paddle){
+        // Check if G1 lost puck in defense
+        const inG1Half = portrait ? (puck.y > H/2) : (puck.x > W/2);
+        if(matchScoreState.lastHitBy === 'g1' && inG1Half){
+          const now = performance.now();
+          if(!matchScoreState.lastPuckLossTime || (now - matchScoreState.lastPuckLossTime > 1500)){
+            matchScoreState.lastPuckLossTime = now;
+            matchScoreState.pts = Math.max(0, matchScoreState.pts - 10);
+            matchScoreState.puckLosses++;
+            addFloatingText(puck.x, puck.y - 20, '-10 DISCO PERSO!', '#ff8800', 1.05);
+            playPenalty();
+            updateHUDPoints();
+          }
+        }
+        matchScoreState.lastHitBy = 'g2';
+      }
     }
   }
 
@@ -288,9 +580,56 @@
     puck.vx = 0; puck.vy = 0;
     state.g1++;
     scoreG1El.textContent = gameMode==='1p' ? `${state.g1} TU` : `${state.g1} G1`;
+
+    let goalPts = 100;
+    matchScoreState.goals++;
+    
+    let notifications = [];
+    notifications.push({ text: '+100 GOL!', color: '#00e5ff' });
+
+    // 1. Gol da lontano
+    const g1HalfHit = portrait ? (matchScoreState.lastG1HitPos.y > H/2) : (matchScoreState.lastG1HitPos.x > W/2);
+    if(g1HalfHit && matchScoreState.lastHitBy === 'g1'){
+      goalPts += 150;
+      matchScoreState.longGoals++;
+      notifications.push({ text: '+150 GOL DA LONTANO!', color: '#ffd700' });
+    }
+
+    // 2. Gol veloce (entro 1 sec)
+    const timeSinceHit = (performance.now() - matchScoreState.lastG1HitTime) / 1000;
+    if(timeSinceHit <= 1.0 && matchScoreState.lastHitBy === 'g1'){
+      goalPts += 200;
+      matchScoreState.fastGoals++;
+      notifications.push({ text: '+200 GOL VELOCE!', color: '#a6ff00' });
+    }
+
+    // 3. Gol rimbalzato
+    if(matchScoreState.bouncesSinceG1Hit >= 1 && matchScoreState.lastHitBy === 'g1'){
+      goalPts += 180;
+      matchScoreState.bounceGoals++;
+      notifications.push({ text: '+180 GOL RIMBALZATO!', color: '#ff2bd6' });
+    }
+
+    // 4. Gol decisivo (7°)
+    if(state.g1 >= state.max){
+      goalPts += 300;
+      matchScoreState.decisiveGoal = true;
+      notifications.push({ text: '+300 GOL DECISIVO!', color: '#ff2255' });
+    }
+
+    matchScoreState.pts += goalPts;
+    updateHUDPoints();
+
+    notifications.forEach((n, idx) => {
+      setTimeout(() => {
+        addFloatingText(puck.x, puck.y - idx * 28, n.text, n.color, 1.15);
+      }, idx * 130);
+    });
+
     playScoreGood();
+    playPointGain();
     const pColor = playerThemes[selectedThemeKey].color;
-    if(portrait) addParticles(puck.x,20,pColor,30); else addParticles(20,puck.y,pColor,30);
+    if(portrait) addParticles(puck.x,20,pColor,35); else addParticles(20,puck.y,pColor,35);
     postGoal(true);
   }
 
@@ -299,6 +638,10 @@
     isScoring = true;
     puck.vx = 0; puck.vy = 0;
     state.g2++;
+    
+    const deficit = state.g2 - state.g1;
+    if(deficit > matchScoreState.maxDeficit) matchScoreState.maxDeficit = deficit;
+
     const diffNames = { easy:'Facile', medium:'Medio', hard:'Difficile' };
     scoreG2El.textContent = gameMode==='1p' ? `CPU (${diffNames[aiDifficulty]}) ${state.g2}` : `G2 ${state.g2}`;
     playScoreBad();
@@ -315,27 +658,92 @@
         running=false;
         isScoring=false;
         inCountdown=false;
-        const g1Name = gameMode==='1p' ? 'TU' : 'G1';
-        const g2Name = gameMode==='1p' ? 'CPU' : 'G2';
-        const winner = state.g1 >= state.max ? g1Name : g2Name;
-        const title = gameMode==='1p' ? (winner===g1Name ? 'HAI VINTO' : 'HAI PERSO') : (winner + ' VINCE');
+
+        // CALCULATE MATCH END BONUSES & XP
+        let matchBonuses = [];
+        let bonusXP = 0;
+
+        if(state.g1 >= state.max){
+          matchBonuses.push({ name: '🏆 Vittoria', xp: 500, color: '#00e5ff' });
+          bonusXP += 500;
+
+          if(state.g2 === 0){
+            matchBonuses.push({ name: '⚡ Perfect Match (7–0)', xp: 1000, color: '#ffd700' });
+            bonusXP += 1000;
+          }
+          if(matchScoreState.maxDeficit >= 3){
+            matchBonuses.push({ name: '🔥 Rimonta Elica', xp: 300, color: '#ff2bd6' });
+            bonusXP += 300;
+          }
+          if(state.g2 === 0){
+            matchBonuses.push({ name: '🛡️ Nessun Gol Subito', xp: 200, color: '#a6ff00' });
+            bonusXP += 200;
+          }
+        }
+
+        const actionPTS = matchScoreState.pts;
+        const totalXPBonus = actionPTS + bonusXP;
+        const xpResult = addXP(totalXPBonus);
+        
+        const oldLvl = getLevelInfo(xpResult.prev);
+        const newLvl = getLevelInfo(xpResult.next);
+        const leveledUp = newLvl.currentLevel.level > oldLvl.currentLevel.level;
+
+        updateHUDPoints();
+
+        const winnerTitle = state.g1 >= state.max ? '🎉 HAI VINTO! 🎉' : 'PARTITA TERMINATA';
+
         overlay.classList.remove('hidden');
-        overlay.innerHTML = '<h1>'+title+'</h1>'+
-          '<p>Punteggio finale: '+state.g1+' - '+state.g2+'</p>'+
-          '<p>Tocca per una nuova partita.</p>'+
-          '<div class="btnRow">'+
-          '<button id="restartBtn">Rigioca</button>'+
-          '<button id="menuBtn" class="alt">Menu</button>'+
-          '<button id="audioBtn2" class="green">Audio: '+(audioEnabled?'ON':'OFF')+'</button>'+
-          '</div>';
+        overlay.innerHTML = `
+          <h1>${winnerTitle}</h1>
+          <p>Punteggio finale: ${state.g1} - ${state.g2}</p>
+          
+          <div class="pmStatsGrid">
+            <div class="pmStatCard"><span>⚽ Gol Normali (+100)</span><span>${matchScoreState.goals}</span></div>
+            <div class="pmStatCard"><span>🚀 Gol Lontano (+150)</span><span>${matchScoreState.longGoals}</span></div>
+            <div class="pmStatCard"><span>⚡ Gol Veloce (+200)</span><span>${matchScoreState.fastGoals}</span></div>
+            <div class="pmStatCard"><span>🏓 Gol Rimbalzo (+180)</span><span>${matchScoreState.bounceGoals}</span></div>
+            <div class="pmStatCard"><span>🛡️ Parate (+30)</span><span>${matchScoreState.saves}</span></div>
+            <div class="pmStatCard"><span>🔄 Recuperi (+20)</span><span>${matchScoreState.recoveries}</span></div>
+          </div>
+
+          <div class="pmXPSection">
+            <div class="pmXPHeader">
+              <span>Punti Partita: +${actionPTS}</span>
+              <span>Bonus Vittoria: +${bonusXP} XP</span>
+            </div>
+            <div class="pmXPTotal">+${totalXPBonus} XP GUADAGNATI!</div>
+            
+            <div class="pmXPBarWrap">
+              <div class="pmXPBarFill" style="width: ${newLvl.progress * 100}%"></div>
+            </div>
+            <div class="pmXPBarLabels">
+              <span>${newLvl.currentLevel.badge} ${newLvl.currentLevel.name}</span>
+              <span>${xpResult.next} / ${newLvl.nextLevel ? newLvl.nextLevel.xp : 'MAX'} XP</span>
+            </div>
+          </div>
+
+          ${leveledUp ? `
+            <div class="levelUpBanner">
+              <div class="luTitle">🎉 NUOVO LIVELLO NEON SBLOCCATO! 🎉</div>
+              <div class="luBadge">${newLvl.currentLevel.badge} ${newLvl.currentLevel.name}</div>
+              <div class="luUnlockText">Hai sbloccato nuovi temi e personalizzazioni nel garage!</div>
+            </div>
+          ` : ''}
+
+          <div class="btnRow">
+            <button id="restartBtn">🔄 Rigioca</button>
+            <button id="garageBtn" class="gold">🎨 Personalizza</button>
+            <button id="menuBtn" class="alt">🏠 Menu</button>
+          </div>
+        `;
+
+        if(leveledUp) playLevelUpFanfare();
+        else if(state.g1 >= state.max) playWin();
+
         document.getElementById('restartBtn').onclick = function(){ startGame(gameMode, aiDifficulty); };
+        document.getElementById('garageBtn').onclick = showCustomizationMenu;
         document.getElementById('menuBtn').onclick = showMenu;
-        document.getElementById('audioBtn2').onclick = function(){
-          audioEnabled=!audioEnabled;
-          this.textContent='Audio: '+(audioEnabled?'ON':'OFF');
-          if(audioEnabled) initAudio();
-        };
-        playWin();
       } else {
         isScoring = false;
         resetPositions(serveToG2);
@@ -460,6 +868,41 @@
     g2Paddle.vx=(g2Paddle.x-prevG2x)/Math.max(dt,0.001);
     g2Paddle.vy=(g2Paddle.y-prevG2y)/Math.max(dt,0.001);
 
+    // Update paddle trails
+    g1Trail.unshift({ x: g1Paddle.x, y: g1Paddle.y });
+    if(g1Trail.length > 12) g1Trail.pop();
+    g2Trail.unshift({ x: g2Paddle.x, y: g2Paddle.y });
+    if(g2Trail.length > 12) g2Trail.pop();
+
+    // Check Heavy Paddle Collision Penalty (-20)
+    const padDist = Math.hypot(g1Paddle.x - g2Paddle.x, g1Paddle.y - g2Paddle.y);
+    const minDist = g1Paddle.r + g2Paddle.r;
+    if(padDist < minDist){
+      const n = norm(g1Paddle.x - g2Paddle.x, g1Paddle.y - g2Paddle.y);
+      const overlap = minDist - padDist;
+      g1Paddle.x += n.x * overlap * 0.5;
+      g1Paddle.y += n.y * overlap * 0.5;
+      g2Paddle.x -= n.x * overlap * 0.5;
+      g2Paddle.y -= n.y * overlap * 0.5;
+
+      const g1Speed = Math.hypot(g1Paddle.vx, g1Paddle.vy);
+      const relSpeed = Math.hypot(g1Paddle.vx - g2Paddle.vx, g1Paddle.vy - g2Paddle.vy);
+      const maxDim = Math.max(W, H);
+
+      if(g1Speed > maxDim * 0.85 || relSpeed > maxDim * 1.1){
+        const now = performance.now();
+        if(!matchScoreState.lastHeavyCollisionTime || (now - matchScoreState.lastHeavyCollisionTime > 1200)){
+          matchScoreState.lastHeavyCollisionTime = now;
+          matchScoreState.pts = Math.max(0, matchScoreState.pts - 20);
+          matchScoreState.heavyCollisions++;
+          addFloatingText((g1Paddle.x + g2Paddle.x)/2, (g1Paddle.y + g2Paddle.y)/2, '-20 SCONTRO FORTE!', '#ff2255', 1.1);
+          playPenalty();
+          addParticles((g1Paddle.x + g2Paddle.x)/2, (g1Paddle.y + g2Paddle.y)/2, '#ff2255', 24);
+          updateHUDPoints();
+        }
+      }
+    }
+
     if(inCountdown){
       puck.x = W/2; puck.y = H/2; puck.vx = 0; puck.vy = 0;
     } else if(isScoring){
@@ -469,13 +912,25 @@
       puck.vx*=.999; puck.vy*=.999;
     }
 
-    const theme = playerThemes[selectedThemeKey];
+    const theme = playerThemes[selectedThemeKey] || playerThemes.cyan;
     if(portrait){
-      if(puck.x-puck.r<18){puck.x=18+puck.r;puck.vx*=-1;playWall();addParticles(puck.x,puck.y,theme.color,8);}
-      if(puck.x+puck.r>W-18){puck.x=W-18-puck.r;puck.vx*=-1;playWall();addParticles(puck.x,puck.y,theme.color,8);}
+      if(puck.x-puck.r<18){
+        puck.x=18+puck.r;puck.vx*=-1;playWall();addParticles(puck.x,puck.y,theme.color,8);
+        if(matchScoreState.lastHitBy==='g1') matchScoreState.bouncesSinceG1Hit++;
+      }
+      if(puck.x+puck.r>W-18){
+        puck.x=W-18-puck.r;puck.vx*=-1;playWall();addParticles(puck.x,puck.y,theme.color,8);
+        if(matchScoreState.lastHitBy==='g1') matchScoreState.bouncesSinceG1Hit++;
+      }
     } else {
-      if(puck.y-puck.r<18){puck.y=18+puck.r;puck.vy*=-1;playWall();addParticles(puck.x,puck.y,theme.color,8);}
-      if(puck.y+puck.r>H-18){puck.y=H-18-puck.r;puck.vy*=-1;playWall();addParticles(puck.x,puck.y,theme.color,8);}
+      if(puck.y-puck.r<18){
+        puck.y=18+puck.r;puck.vy*=-1;playWall();addParticles(puck.x,puck.y,theme.color,8);
+        if(matchScoreState.lastHitBy==='g1') matchScoreState.bouncesSinceG1Hit++;
+      }
+      if(puck.y+puck.r>H-18){
+        puck.y=H-18-puck.r;puck.vy*=-1;playWall();addParticles(puck.x,puck.y,theme.color,8);
+        if(matchScoreState.lastHitBy==='g1') matchScoreState.bouncesSinceG1Hit++;
+      }
     }
 
     const gs = portrait ? W*.28 : H*.28;
@@ -498,6 +953,7 @@
       collidePaddle(g2Paddle,'#ff2bd6');
     }
 
+    updateFloatingTexts(dt);
     particles = particles.filter(function(p){ return p.life>0; });
     for(const p of particles){ p.x+=p.vx; p.y+=p.vy; p.vx*=.98; p.life-=1; }
     if(flash>0) flash-=1;
@@ -508,7 +964,7 @@
     if(flash>0){ ctx.fillStyle='rgba(255,255,255,'+(0.03*flash)+')'; ctx.fillRect(0,0,W,H); }
     ctx.save();
     
-    const theme = playerThemes[selectedThemeKey];
+    const theme = playerThemes[selectedThemeKey] || playerThemes.cyan;
     ctx.strokeStyle=theme.glow; ctx.lineWidth=3; ctx.shadowColor=theme.color; ctx.shadowBlur=16;
     roundRect(12,12,W-24,H-24,22,false,true);
     ctx.beginPath();
@@ -531,19 +987,52 @@
     ctx.restore();
   }
 
+  function drawPaddleTrails(){
+    const theme = playerThemes[selectedThemeKey] || playerThemes.cyan;
+    // G1 Trail
+    for(let i=0; i<g1Trail.length; i++){
+      const alpha = (1 - i/g1Trail.length) * 0.35;
+      const r = g1Paddle.r * (1 - i/(g1Trail.length*1.5));
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = theme.color;
+      ctx.shadowColor = theme.color;
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.arc(g1Trail[i].x, g1Trail[i].y, r, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    }
+    // G2 Trail
+    for(let i=0; i<g2Trail.length; i++){
+      const alpha = (1 - i/g2Trail.length) * 0.35;
+      const r = g2Paddle.r * (1 - i/(g2Trail.length*1.5));
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = '#ff2bd6';
+      ctx.shadowColor = '#ff2bd6';
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.arc(g2Trail[i].x, g2Trail[i].y, r, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
   function drawPaddle(x,y,r,color){
     ctx.save(); ctx.shadowColor=color; ctx.shadowBlur=24;
     const g=ctx.createRadialGradient(x-r*.3,y-r*.3,r*.25,x,y,r);
     g.addColorStop(0,'#ffffff'); g.addColorStop(.18,color); g.addColorStop(1,'rgba(255,255,255,.08)');
     ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
     ctx.lineWidth=3; ctx.strokeStyle='rgba(255,255,255,.55)'; ctx.stroke();
+
     ctx.beginPath(); ctx.fillStyle='rgba(255,255,255,.18)';
     ctx.arc(x-r*.25,y-r*.25,r*.25,0,Math.PI*2); ctx.fill();
     ctx.restore();
   }
 
   function drawPuck(){
-    const theme = playerThemes[selectedThemeKey];
+    const theme = playerThemes[selectedThemeKey] || playerThemes.cyan;
     ctx.save(); ctx.shadowColor=theme.color; ctx.shadowBlur=18;
     const g=ctx.createRadialGradient(puck.x-4,puck.y-4,3,puck.x,puck.y,puck.r);
     g.addColorStop(0,'#ffffff'); g.addColorStop(.35,theme.color); g.addColorStop(1,'#444444');
@@ -567,7 +1056,7 @@
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
-    const theme = playerThemes[selectedThemeKey];
+    const theme = playerThemes[selectedThemeKey] || playerThemes.cyan;
     let glowColor = theme.color;
     if(countdownText === 'VIA!') glowColor = '#a6ff00';
     else if(countdownText === 'GOL!') glowColor = '#ff2bd6';
@@ -587,11 +1076,14 @@
   }
 
   function draw(){
-    drawRink(); drawParticles();
-    const theme = playerThemes[selectedThemeKey];
+    drawRink();
+    drawPaddleTrails();
+    drawParticles();
+    const theme = playerThemes[selectedThemeKey] || playerThemes.cyan;
     drawPaddle(g2Paddle.x,g2Paddle.y,g2Paddle.r,'#ff2bd6');
     drawPaddle(g1Paddle.x,g1Paddle.y,g1Paddle.r,theme.color);
     drawPuck();
+    drawFloatingTexts();
     drawCountdown();
   }
 
@@ -637,6 +1129,8 @@
     isScoring=false; isPaused=false; inCountdown=false; countdownText="";
     stuckTimer=0; stuckNudgeTimer=0; isRetreating=false; retreatTimer=0;
 
+    resetMatchScoreState();
+
     const diffNames = { easy:'Facile', medium:'Medio', hard:'Difficile' };
 
     if(mode==='1p'){
@@ -661,21 +1155,29 @@
     running=false; isPaused=false; isScoring=false; inCountdown=false; countdownText="";
     gameMode=null; state.g1=0; state.g2=0;
     scoreG1El.textContent='0 TU'; scoreG2El.textContent='G2 0';
+    resetMatchScoreState();
     overlay.classList.remove('hidden');
 
-    const theme = playerThemes[selectedThemeKey];
-    overlay.innerHTML = '<h1>NEON HOCKEY</h1>'+
-      '<p>Scegli la modalità di gioco.</p><p>La partita finisce a 7 gol.</p>'+
-      '<div class="modeBtns">'+
-      '<button id="btn1p">1 Giocatore (vs CPU)</button>'+
-      '<button id="btn2p" class="alt">2 Giocatori</button>'+
-      '<button id="colorBtn" style="background:linear-gradient(90deg,'+theme.color+',#ffffff);color:#03131f;">🎨 Tema: '+theme.name+'</button>'+
-      '<button id="audioBtn3" class="green">Audio: '+(audioEnabled?'ON':'OFF')+'</button>'+
-      '</div>';
+    const theme = playerThemes[selectedThemeKey] || playerThemes.cyan;
+    const playerXP = getStoredXP();
+    const lvlInfo = getLevelInfo(playerXP);
+
+    overlay.innerHTML = `
+      <h1>NEON HOCKEY</h1>
+      <p>Scegli la modalità di gioco.</p><p>La partita finisce a 7 gol.</p>
+      <div class="modeBtns">
+        <button id="btn1p">1 Giocatore (vs CPU)</button>
+        <button id="btn2p" class="alt">2 Giocatori</button>
+        <button id="profileBtn" class="gold">🏆 Livello: ${lvlInfo.currentLevel.badge} ${lvlInfo.currentLevel.name}</button>
+        <button id="colorBtn" style="background:linear-gradient(90deg,${theme.color},#ffffff);color:#03131f;">🎨 Tema: ${theme.name}</button>
+        <button id="audioBtn3" class="green">Audio: ${audioEnabled?'ON':'OFF'}</button>
+      </div>
+    `;
 
     document.getElementById('btn1p').onclick = showDifficultyMenu;
     document.getElementById('btn2p').onclick = function(){ startGame('2p'); };
-    document.getElementById('colorBtn').onclick = showColorMenu;
+    document.getElementById('profileBtn').onclick = showProfileMenu;
+    document.getElementById('colorBtn').onclick = showCustomizationMenu;
     document.getElementById('audioBtn3').onclick = function(){
       audioEnabled=!audioEnabled;
       this.textContent='Audio: '+(audioEnabled?'ON':'OFF');
@@ -699,25 +1201,92 @@
     document.getElementById('btnBack').onclick = showMenu;
   }
 
-  function showColorMenu(){
+  function showProfileMenu(){
+    const playerXP = getStoredXP();
+    const info = getLevelInfo(playerXP);
+    
+    let lvlItemsHtml = '';
+    LEVELS.forEach(lvl => {
+      const isUnlocked = playerXP >= lvl.xp;
+      const isActive = info.currentLevel.level === lvl.level;
+      const statusText = isUnlocked ? (isActive ? 'ATTIVO' : 'SBLOCCATO') : `${lvl.xp} XP`;
+      lvlItemsHtml += `
+        <div class="lvlItem ${isUnlocked?'unlocked':''} ${isActive?'active':''}">
+          <div><strong>${lvl.badge} ${lvl.name}</strong> (Liv. ${lvl.level})</div>
+          <div style="font-weight:700;color:${isUnlocked?'#00e5ff':'rgba(255,255,255,0.5)'}">${statusText}</div>
+        </div>
+      `;
+    });
+
     overlay.classList.remove('hidden');
+    overlay.innerHTML = `
+      <h1>PROFILO GIOCATORE</h1>
+      <div class="profileSection">
+        <div class="profileHeader">
+          <div class="profileAvatar">${info.currentLevel.badge}</div>
+          <div class="profileInfo">
+            <h2>${info.currentLevel.name} (Livello ${info.currentLevel.level})</h2>
+            <p>Esperienza totale: <strong>${playerXP} XP</strong></p>
+          </div>
+        </div>
+        <div class="pmXPBarWrap" style="margin-top:12px;">
+          <div class="pmXPBarFill" style="width: ${info.progress * 100}%"></div>
+        </div>
+        <div class="pmXPBarLabels">
+          <span>${info.currentLevel.xp} XP</span>
+          <span>${info.nextLevel ? info.nextLevel.xp + ' XP' : 'LIV. MAX'}</span>
+        </div>
+      </div>
+      <p style="text-align:left;font-weight:700;margin:6px 0 2px;">Progressione Livelli Neon:</p>
+      <div class="lvlList">
+        ${lvlItemsHtml}
+      </div>
+      <div class="btnRow">
+        <button id="btnBackP" style="background:rgba(255,255,255,0.18);color:#fff;margin-top:6px;">← Indietro</button>
+      </div>
+    `;
+    document.getElementById('btnBackP').onclick = showMenu;
+  }
+
+  function showCustomizationMenu(){
+    overlay.classList.remove('hidden');
+    const playerXP = getStoredXP();
+    
     let themeBtns = '';
     const keys = Object.keys(playerThemes);
     for(const key of keys){
       const th = playerThemes[key];
-      const isSel = key === selectedThemeKey ? ' ✓' : '';
-      themeBtns += '<button style="background:'+th.color+';color:#03131f;min-width:210px;" onclick="window.selectTheme(\''+key+'\')">'+th.name+isSel+'</button>';
+      const isUnlocked = playerXP >= th.reqXP;
+      const isSelected = key === selectedThemeKey;
+      
+      themeBtns += `
+        <div class="garageItem ${isSelected?'selected':''} ${!isUnlocked?'locked':''}" onclick="window.selectTheme('${key}', ${isUnlocked})">
+          <div style="font-size:22px;margin-bottom:2px;">${th.name.split(' ')[0]}</div>
+          <div class="garageItemTitle" style="color:${th.color};">${th.name.replace(/^[^\s]+\s/,'')}</div>
+          <div class="garageItemSub">${isUnlocked ? (isSelected ? '✓ In uso' : 'Sbloccato') : '🔒 Liv. ' + th.reqLevel + ' (' + th.reqXP + ' XP)'}</div>
+        </div>
+      `;
     }
-    overlay.innerHTML = '<h1>TEMA E COLORE</h1>'+
-      '<p>Scegli il tuo colore e l\'atmosfera del campo:</p>'+
-      '<div class="modeBtns">'+
-      themeBtns +
-      '<button id="btnBackC" style="background:rgba(255,255,255,0.15);color:#fff;margin-top:4px;">← Indietro</button>'+
-      '</div>';
+
+    overlay.innerHTML = `
+      <h1>GARAGE NEON</h1>
+      <p>Scegli i tuoi colori e l'atmosfera del campo (sbloccabili salendo di livello):</p>
+      <div class="garageGrid">
+        ${themeBtns}
+      </div>
+      <div class="btnRow">
+        <button id="btnBackC" style="background:rgba(255,255,255,0.18);color:#fff;margin-top:8px;">← Indietro</button>
+      </div>
+    `;
     document.getElementById('btnBackC').onclick = showMenu;
   }
 
-  window.selectTheme = function(key){
+  window.selectTheme = function(key, isUnlocked){
+    if(!isUnlocked){
+      const th = playerThemes[key];
+      alert(`🔒 Questo tema richiede Livello ${th.reqLevel} (${th.name}) con ${th.reqXP} XP! Gioca per guadagnare punti ed entrarne in possesso!`);
+      return;
+    }
     selectedThemeKey = key;
     applyRinkTheme();
     showMenu();
@@ -795,6 +1364,8 @@
   canvas.addEventListener('pointerup',function(e){ pointerOwners.delete(e.pointerId); });
   canvas.addEventListener('pointercancel',function(e){ pointerOwners.delete(e.pointerId); });
 
+  hudBadgeEl.addEventListener('click', showProfileMenu);
+
   window.addEventListener('keydown', function(e){
     if(e.key === 'Escape' || e.code === 'Escape'){
       togglePause();
@@ -803,7 +1374,8 @@
 
   document.getElementById('btn1p').onclick = showDifficultyMenu;
   document.getElementById('btn2p').onclick = function(){ startGame('2p'); };
-  document.getElementById('colorBtn').onclick = showColorMenu;
+  document.getElementById('profileBtn').onclick = showProfileMenu;
+  document.getElementById('colorBtn').onclick = showCustomizationMenu;
   document.getElementById('audioBtn').onclick = function(){
     audioEnabled=!audioEnabled;
     this.textContent='Audio: '+(audioEnabled?'ON':'OFF');
