@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover,user-scalable=no" />
+<title>Neon Hockey</title>
+<style>
+  :root{
+    --bgA:#040816;
+    --bgB:#0a1430;
+    --cyan:#00e5ff;
+    --pink:#ff2bd6;
+    --lime:#a6ff00;
+    --white:#eefcff;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{
+    margin:0;width:100%;height:100%;overflow:hidden;
+    background:radial-gradient(circle at center,#12214a 0%,#081226 45%,#03060d 100%);
+    font-family:Arial,Helvetica,sans-serif;color:var(--white);touch-action:none;
+  }
+  #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:8px;}
+  #game{
+    position:relative;overflow:hidden;border-radius:22px;
+    border:2px solid rgba(0,229,255,.7);
+    box-shadow:0 0 12px rgba(0,229,255,.6),0 0 32px rgba(0,229,255,.25),inset 0 0 20px rgba(0,229,255,.15);
+    background:radial-gradient(circle at 50% 50%,rgba(255,43,214,.08),transparent 30%),
+      linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01)),
+      linear-gradient(180deg,var(--bgB),var(--bgA));
+    transition: background 0.4s ease, border-color 0.4s ease;
+  }
+  canvas{width:100%;height:100%;display:block;}
+  .hud{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:2;}
+  .scoreboard{
+    position:absolute;top:10px;left:50%;transform:translateX(-50%);
+    display:flex;align-items:center;gap:12px;
+    background:rgba(4,8,22,0.78);border:1px solid rgba(0,229,255,0.35);
+    border-radius:999px;padding:6px 20px;backdrop-filter:blur(8px);
+    box-shadow:0 0 18px rgba(0,229,255,0.22);
+  }
+  .score{
+    font-size:clamp(14px,2.1vw,24px);font-weight:800;letter-spacing:1px;
+    text-shadow:0 0 12px currentColor;white-space:nowrap;
+  }
+  .score.g1{color:var(--cyan)}
+  .score.g2{color:var(--pink)}
+  .scoreDivider{font-size:clamp(14px,2vw,22px);color:rgba(255,255,255,0.35);font-weight:700;}
+  .overlay{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:3;
+    min-width:min(88vw,520px);max-width:90%;text-align:center;
+    background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.14);border-radius:18px;
+    padding:18px 22px;backdrop-filter:blur(10px);box-shadow:0 0 22px rgba(0,229,255,.2);
+  }
+  .overlay h1{margin:0 0 10px;font-size:clamp(26px,4vw,52px);color:var(--cyan);text-shadow:0 0 14px var(--cyan),0 0 30px var(--cyan);}
+  .overlay p{margin:6px 0;font-size:clamp(13px,1.6vw,20px);color:#d9f7ff;}
+  .btnRow{margin-top:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;pointer-events:auto;}
+  button{
+    border:none;border-radius:999px;padding:12px 18px;font-size:16px;font-weight:700;cursor:pointer;
+    color:#03131f;background:linear-gradient(90deg,var(--cyan),#8af5ff);box-shadow:0 0 12px rgba(0,229,255,.45);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  button:active{transform:scale(0.96);}
+  button.alt{background:linear-gradient(90deg,var(--pink),#ff9af0);box-shadow:0 0 12px rgba(255,43,214,.45);}
+  button.green{background:linear-gradient(90deg,var(--lime),#d4ff80);box-shadow:0 0 12px rgba(166,255,0,.45);}
+  .note{
+    position:absolute;bottom:8px;left:50%;transform:translateX(-50%);z-index:2;text-align:center;
+    font-size:clamp(11px,1.3vw,16px);color:rgba(234,252,255,.7);padding:0 10px;pointer-events:none;
+  }
+  .hidden{display:none}
+  .modeBtns{display:flex;flex-direction:column;gap:10px;align-items:center;margin-top:10px;pointer-events:auto;}
+  .modeBtns button{font-size:17px;padding:13px 26px;min-width:230px;}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="game">
+    <canvas id="c"></canvas>
+    <div class="hud">
+      <div class="scoreboard" id="scoreboardBox">
+        <div class="score g2" id="scoreG2El">CPU (Medio) 0</div>
+        <div class="scoreDivider">-</div>
+        <div class="score g1" id="scoreG1El">0 TU</div>
+      </div>
+    </div>
+    <div id="overlay" class="overlay">
+      <h1>NEON HOCKEY</h1>
+      <p>Scegli la modalità di gioco.</p><p>La partita finisce a 7 gol.</p>
+      <div class="modeBtns">
+        <button id="btn1p">1 Giocatore (vs CPU)</button>
+        <button id="btn2p" class="alt">2 Giocatori</button>
+        <button id="colorBtn" style="background:linear-gradient(90deg,#00e5ff,#8af5ff);color:#03131f;">🎨 Colore: Cyan</button>
+        <button id="audioBtn" class="green">Audio: ON</button>
+      </div>
+    </div>
+    <div class="note">Premi ESC per mettere in pausa • Multitouch attivo</div>
+  </div>
+</div>
+<script>
+(() => {
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  const gameEl = document.getElementById('game');
+  const overlay = document.getElementById('overlay');
+  const scoreG1El = document.getElementById('scoreG1El');
+  const scoreG2El = document.getElementById('scoreG2El');
+  const scoreboardBox = document.getElementById('scoreboardBox');
+
+  let W=1200,H=700;
+  let DPR=Math.max(1,Math.min(2,window.devicePixelRatio||1));
+  let running=false, isPaused=false, audioEnabled=true, lastTime=0, flash=0;
+  let particles=[], portrait=false;
+  let gameMode=null;
+  const pointerOwners = new Map();
+
+  const state = { g1:0, g2:0, max:7 };
+  let countdownText = "";
+  let inCountdown = false;
+  let isScoring = false;
+  let serveTarget = true;
+  let countdownTimer = null;
+
+  let aiDifficulty = 'medium';
+  let stuckTimer = 0;
+  let stuckNudgeTimer = 0;
+  let isRetreating = false;
+  let retreatTimer = 0;
+
+  const playerThemes = {
+    cyan: { name: '🩵 Cyan', color: '#00e5ff', glow: 'rgba(0,229,255,0.6)', bg: 'radial-gradient(circle at 50% 50%,rgba(0,229,255,.14),transparent 45%), linear-gradient(180deg,rgba(0,229,255,.03),rgba(0,229,255,.01)), linear-gradient(180deg,#0a1430,#040816)' },
+    lime: { name: '💚 Lime', color: '#a6ff00', glow: 'rgba(166,255,0,0.6)', bg: 'radial-gradient(circle at 50% 50%,rgba(166,255,0,.14),transparent 45%), linear-gradient(180deg,rgba(166,255,0,.03),rgba(166,255,0,.01)), linear-gradient(180deg,#0e2608,#040e02)' },
+    orange: { name: '🧡 Arancio', color: '#ff8800', glow: 'rgba(255,136,0,0.6)', bg: 'radial-gradient(circle at 50% 50%,rgba(255,136,0,.14),transparent 45%), linear-gradient(180deg,rgba(255,136,0,.03),rgba(255,136,0,.01)), linear-gradient(180deg,#2b1104,#0f0501)' },
+    purple: { name: '💜 Viola', color: '#b537ff', glow: 'rgba(181,55,255,0.6)', bg: 'radial-gradient(circle at 50% 50%,rgba(181,55,255,.14),transparent 45%), linear-gradient(180deg,rgba(181,55,255,.03),rgba(181,55,255,.01)), linear-gradient(180deg,#1c092b,#0a0212)' },
+    yellow: { name: '💛 Giallo', color: '#ffe600', glow: 'rgba(255,230,0,0.6)', bg: 'radial-gradient(circle at 50% 50%,rgba(255,230,0,.14),transparent 45%), linear-gradient(180deg,rgba(255,230,0,.03),rgba(255,230,0,.01)), linear-gradient(180deg,#242104,#0e0d01)' }
+  };
+  let selectedThemeKey = 'cyan';
+
+  const puck = { x:0,y:0,vx:0,vy:0,r:16 };
+  const g1Paddle = { x:0,y:0,tx:0,ty:0,vx:0,vy:0,r:38,speed:18 }; 
+  const g2Paddle = { x:0,y:0,tx:0,ty:0,vx:0,vy:0,r:38,speed:18 }; 
+
+  let audioCtx=null;
+  function initAudio(){
+    if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==='suspended') audioCtx.resume();
+  }
+  function beep(freq=440,dur=.06,type='sine',vol=.03,slide=0){
+    if(!audioEnabled) return;
+    initAudio();
+    const now=audioCtx.currentTime;
+    const osc=audioCtx.createOscillator(), gain=audioCtx.createGain();
+    osc.type=type; osc.frequency.setValueAtTime(freq,now);
+    if(slide) osc.frequency.linearRampToValueAtTime(freq+slide,now+dur);
+    gain.gain.setValueAtTime(0.0001,now);
+    gain.gain.exponentialRampToValueAtTime(vol,now+.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001,now+dur);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(now); osc.stop(now+dur+.03);
+  }
+  function playHit(s){ beep(260+Math.min(s*10,500),.05,'square',.03,80); }
+  function playWall(){ beep(300,.04,'triangle',.02,-60); }
+  function playScoreGood(){ beep(660,.07,'sawtooth',.03,120); setTimeout(()=>beep(840,.08,'triangle',.025,60),60); }
+  function playScoreBad(){ beep(180,.12,'square',.035,-100); setTimeout(()=>beep(120,.12,'triangle',.025,-40),70); }
+  function playWin(){ beep(520,.08,'triangle',.025,80); setTimeout(()=>beep(740,.08,'triangle',.025,100),90); setTimeout(()=>beep(980,.14,'triangle',.03,0),180); }
+
+  function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+  function norm(x,y){ const d=Math.hypot(x,y)||1; return {x:x/d,y:y/d}; }
+  function isPortrait(){ return window.innerHeight>window.innerWidth; }
+
+  function applyRinkTheme(){
+    const theme = playerThemes[selectedThemeKey];
+    gameEl.style.background = theme.bg;
+    gameEl.style.borderColor = theme.color;
+    gameEl.style.boxShadow = '0 0 16px '+theme.glow+', 0 0 36px rgba(0,0,0,0.4), inset 0 0 20px '+theme.glow;
+    scoreG1El.style.color = theme.color;
+    scoreboardBox.style.borderColor = theme.color;
+  }
+
+  function resize(){
+    portrait=isPortrait();
+    const pad=8, aw=window.innerWidth-pad*2, ah=window.innerHeight-pad*2;
+    let gw,gh;
+    if(portrait){ gh=Math.min(ah,aw*1.6); gw=Math.min(aw,gh/1.6); }
+    else{ gw=Math.min(aw,ah*1.6); gh=Math.min(ah,gw/1.6); }
+    gameEl.style.width=gw+'px'; gameEl.style.height=gh+'px';
+    const rect=canvas.getBoundingClientRect();
+    W=Math.round(rect.width); H=Math.round(rect.height);
+    canvas.width=Math.round(W*DPR); canvas.height=Math.round(H*DPR);
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    applyRinkTheme();
+    if(!running) resetPositions(false);
+  }
+
+  function resetPositions(serveToG2){
+    serveTarget = serveToG2 !== undefined ? serveToG2 : Math.random()>0.5;
+    if(portrait){
+      g1Paddle.x=W/2; g1Paddle.y=H*0.82; g1Paddle.tx=g1Paddle.x; g1Paddle.ty=g1Paddle.y;
+      g2Paddle.x=W/2; g2Paddle.y=H*0.18; g2Paddle.tx=g2Paddle.x; g2Paddle.ty=g2Paddle.y;
+    } else {
+      g1Paddle.x=W*0.85; g1Paddle.y=H/2; g1Paddle.tx=g1Paddle.x; g1Paddle.ty=g1Paddle.y;
+      g2Paddle.x=W*0.15; g2Paddle.y=H/2; g2Paddle.tx=g2Paddle.x; g2Paddle.ty=g2Paddle.y;
+    }
+    g1Paddle.vx=g1Paddle.vy=g2Paddle.vx=g2Paddle.vy=0;
+    puck.x=W/2; puck.y=H/2; puck.vx=0; puck.vy=0;
+    stuckTimer=0; stuckNudgeTimer=0; isRetreating=false; retreatTimer=0;
+  }
+
+  function launchPuck(serveToG2){
+    const angle=Math.random()*0.9-0.45, speed=Math.max(W,H)*0.52;
+    if(portrait){ puck.vx=Math.sin(angle)*speed; puck.vy=(serveToG2?1:-1)*speed; }
+    else{ puck.vx=(serveToG2?-1:1)*speed; puck.vy=Math.sin(angle)*speed; }
+  }
+
+  function startCountdown(onComplete){
+    if(countdownTimer) clearInterval(countdownTimer);
+    inCountdown = true;
+    let count = 3;
+    countdownText = "3";
+    beep(440, .1, 'sine', .05);
+
+    countdownTimer = setInterval(function(){
+      if(isPaused) return;
+      count--;
+      if(count === 2){
+        countdownText = "2";
+        beep(440, .1, 'sine', .05);
+      } else if(count === 1){
+        countdownText = "1";
+        beep(440, .1, 'sine', .05);
+      } else if(count === 0){
+        countdownText = "VIA!";
+        beep(880, .25, 'triangle', .06);
+      } else {
+        clearInterval(countdownTimer);
+        countdownTimer = null;
+        countdownText = "";
+        inCountdown = false;
+        if(onComplete) onComplete();
+      }
+    }, 650);
+  }
+
+  function addParticles(x,y,color,count){
+    count=count||14;
+    for(let i=0;i<count;i++){
+      const a=Math.random()*Math.PI*2, s=1+Math.random()*4;
+      particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:18+Math.random()*18,maxLife:18+Math.random()*18,color});
+    }
+  }
+
+  function collidePaddle(pad,color){
+    const dx=puck.x-pad.x, dy=puck.y-pad.y, d=Math.hypot(dx,dy), minD=puck.r+pad.r;
+    if(d<minD){
+      const n=norm(dx,dy);
+      const t={x:-n.y,y:n.x};
+      puck.x=pad.x+n.x*(minD+.5);
+      puck.y=pad.y+n.y*(minD+.5);
+
+      const padPush=0.28;
+      const pvx=pad.vx*padPush, pvy=pad.vy*padPush;
+      const rvx=puck.vx-pvx, rvy=puck.vy-pvy;
+      const normalIn=rvx*n.x+rvy*n.y;
+      const tangentIn=rvx*t.x+rvy*t.y;
+
+      if(normalIn<0){
+        const bounce=1.03;
+        const outNormal=-normalIn*bounce;
+        puck.vx = n.x*outNormal + t.x*tangentIn + pvx + pad.vx*0.10;
+        puck.vy = n.y*outNormal + t.y*tangentIn + pvy + pad.vy*0.10;
+      }
+
+      const pushAlong = Math.max(0, pad.vx*n.x + pad.vy*n.y);
+      puck.vx += n.x * pushAlong * 0.18 + t.x * (pad.vx*t.x + pad.vy*t.y) * 0.08;
+      puck.vy += n.y * pushAlong * 0.18 + t.y * (pad.vx*t.x + pad.vy*t.y) * 0.08;
+
+      let sp=Math.hypot(puck.vx,puck.vy);
+      const minSpeed=Math.max(W,H)*0.34;
+      const maxSpeed=Math.max(W,H)*1.55;
+      if(sp<minSpeed){ puck.vx=puck.vx/sp*minSpeed; puck.vy=puck.vy/sp*minSpeed; sp=minSpeed; }
+      if(sp>maxSpeed){ puck.vx=puck.vx/sp*maxSpeed; puck.vy=puck.vy/sp*maxSpeed; sp=maxSpeed; }
+
+      playHit(sp/100); addParticles(puck.x,puck.y,color,18); flash=4;
+    }
+  }
+
+  function scoreG1(){
+    if(isScoring || inCountdown || isPaused) return;
+    isScoring = true;
+    puck.vx = 0; puck.vy = 0;
+    state.g1++;
+    scoreG1El.textContent = gameMode==='1p' ? `${state.g1} TU` : `${state.g1} G1`;
+    playScoreGood();
+    const pColor = playerThemes[selectedThemeKey].color;
+    if(portrait) addParticles(puck.x,20,pColor,30); else addParticles(20,puck.y,pColor,30);
+    postGoal(true);
+  }
+
+  function scoreG2(){
+    if(isScoring || inCountdown || isPaused) return;
+    isScoring = true;
+    puck.vx = 0; puck.vy = 0;
+    state.g2++;
+    const diffNames = { easy:'Facile', medium:'Medio', hard:'Difficile' };
+    scoreG2El.textContent = gameMode==='1p' ? `CPU (${diffNames[aiDifficulty]}) ${state.g2}` : `G2 ${state.g2}`;
+    playScoreBad();
+    if(portrait) addParticles(puck.x,H-20,'#ff2bd6',30); else addParticles(W-20,puck.y,'#ff2bd6',30);
+    postGoal(false);
+  }
+
+  function postGoal(serveToG2){
+    countdownText = "GOL!";
+    const reachedMax = (state.g1 >= state.max || state.g2 >= state.max);
+    setTimeout(function(){
+      countdownText = "";
+      if(reachedMax){
+        running=false;
+        isScoring=false;
+        inCountdown=false;
+        const g1Name = gameMode==='1p' ? 'TU' : 'G1';
+        const g2Name = gameMode==='1p' ? 'CPU' : 'G2';
+        const winner = state.g1 >= state.max ? g1Name : g2Name;
+        const title = gameMode==='1p' ? (winner===g1Name ? 'HAI VINTO' : 'HAI PERSO') : (winner + ' VINCE');
+        overlay.classList.remove('hidden');
+        overlay.innerHTML = '<h1>'+title+'</h1>'+
+          '<p>Punteggio finale: '+state.g1+' - '+state.g2+'</p>'+
+          '<p>Tocca per una nuova partita.</p>'+
+          '<div class="btnRow">'+
+          '<button id="restartBtn">Rigioca</button>'+
+          '<button id="menuBtn" class="alt">Menu</button>'+
+          '<button id="audioBtn2" class="green">Audio: '+(audioEnabled?'ON':'OFF')+'</button>'+
+          '</div>';
+        document.getElementById('restartBtn').onclick = function(){ startGame(gameMode, aiDifficulty); };
+        document.getElementById('menuBtn').onclick = showMenu;
+        document.getElementById('audioBtn2').onclick = function(){
+          audioEnabled=!audioEnabled;
+          this.textContent='Audio: '+(audioEnabled?'ON':'OFF');
+          if(audioEnabled) initAudio();
+        };
+        playWin();
+      } else {
+        isScoring = false;
+        resetPositions(serveToG2);
+        startCountdown(function(){
+          launchPuck(serveToG2);
+        });
+      }
+    }, 1100);
+  }
+
+  function updateAI(dt){
+    const puckSpeed = Math.hypot(puck.vx, puck.vy);
+    const distToPuck = Math.hypot(puck.x - g2Paddle.x, puck.y - g2Paddle.y);
+
+    if(puckSpeed < 50 && distToPuck < g2Paddle.r + puck.r + 35){
+      stuckTimer += dt;
+      if(stuckTimer > 0.3 && !isRetreating){
+        isRetreating = true;
+        retreatTimer = 0.45;
+      }
+    } else {
+      stuckTimer = Math.max(0, stuckTimer - dt);
+    }
+
+    if(puckSpeed < 6){
+      stuckNudgeTimer += dt;
+      if(stuckNudgeTimer > 1.8){
+        stuckNudgeTimer = 0;
+        const nudgeSpeed = Math.max(W, H) * 0.28;
+        if(portrait){
+          puck.vy = (g2Paddle.y < H/2) ? nudgeSpeed : -nudgeSpeed;
+        } else {
+          puck.vx = (g2Paddle.x < W/2) ? nudgeSpeed : -nudgeSpeed;
+        }
+      }
+    } else {
+      stuckNudgeTimer = 0;
+    }
+
+    if(isRetreating){
+      retreatTimer -= dt;
+      if(retreatTimer <= 0){
+        isRetreating = false;
+      }
+      if(portrait){
+        g2Paddle.tx += (W/2 - g2Paddle.tx) * Math.min(1, dt*14);
+        g2Paddle.ty += (H*0.08 - g2Paddle.ty) * Math.min(1, dt*14);
+      } else {
+        g2Paddle.tx += (W*0.08 - g2Paddle.tx) * Math.min(1, dt*14);
+        g2Paddle.ty += (H/2 - g2Paddle.ty) * Math.min(1, dt*14);
+      }
+      return;
+    }
+
+    let reactSpeed = 9;
+    let predictFactor = 0;
+    if(aiDifficulty === 'easy'){
+      reactSpeed = 5;
+      predictFactor = 0;
+    } else if(aiDifficulty === 'medium'){
+      reactSpeed = 9.5;
+      predictFactor = 0.10;
+    } else if(aiDifficulty === 'hard'){
+      reactSpeed = 16.5;
+      predictFactor = 0.24;
+    }
+
+    let targetPuckX = puck.x + puck.vx * predictFactor;
+    let targetPuckY = puck.y + puck.vy * predictFactor;
+
+    if(portrait){
+      const aimX = clamp(targetPuckX, 30+g2Paddle.r, W-30-g2Paddle.r);
+      let aimY = H*0.18;
+      if(puck.y < H/2){
+        aimY = clamp(targetPuckY + 45, 30+g2Paddle.r, H/2-24-g2Paddle.r);
+      }
+      g2Paddle.tx += (aimX - g2Paddle.tx) * Math.min(1, dt * reactSpeed);
+      g2Paddle.ty += (aimY - g2Paddle.ty) * Math.min(1, dt * reactSpeed);
+    } else {
+      let aimX = W*0.15;
+      if(puck.x < W/2){
+        aimX = clamp(targetPuckX - 45, 30+g2Paddle.r, W/2-24-g2Paddle.r);
+      }
+      const aimY = clamp(targetPuckY, 30+g2Paddle.r, H-30-g2Paddle.r);
+      g2Paddle.tx += (aimX - g2Paddle.tx) * Math.min(1, dt * reactSpeed);
+      g2Paddle.ty += (aimY - g2Paddle.ty) * Math.min(1, dt * reactSpeed);
+    }
+  }
+
+  function update(dt){
+    if(isPaused) return;
+    const lerp = 1 - Math.pow(.001, dt);
+    const prevG1x=g1Paddle.x, prevG1y=g1Paddle.y, prevG2x=g2Paddle.x, prevG2y=g2Paddle.y;
+
+    g1Paddle.x += (g1Paddle.tx-g1Paddle.x)*Math.min(1,lerp*g1Paddle.speed);
+    g1Paddle.y += (g1Paddle.ty-g1Paddle.y)*Math.min(1,lerp*g1Paddle.speed);
+    if(gameMode==='2p'){
+      g2Paddle.x += (g2Paddle.tx-g2Paddle.x)*Math.min(1,lerp*g2Paddle.speed);
+      g2Paddle.y += (g2Paddle.ty-g2Paddle.y)*Math.min(1,lerp*g2Paddle.speed);
+    } else {
+      updateAI(dt);
+      const cpuSpeed = aiDifficulty==='easy' ? 7 : (aiDifficulty==='hard' ? 17 : 12);
+      g2Paddle.x += (g2Paddle.tx-g2Paddle.x)*Math.min(1,lerp*cpuSpeed);
+      g2Paddle.y += (g2Paddle.ty-g2Paddle.y)*Math.min(1,lerp*cpuSpeed);
+    }
+
+    const m=30;
+    if(portrait){
+      g2Paddle.x=clamp(g2Paddle.x,m+g2Paddle.r,W-m-g2Paddle.r);
+      g2Paddle.y=clamp(g2Paddle.y,m+g2Paddle.r,H/2-24-g2Paddle.r);
+      g1Paddle.x=clamp(g1Paddle.x,m+g1Paddle.r,W-m-g1Paddle.r);
+      g1Paddle.y=clamp(g1Paddle.y,H/2+24+g1Paddle.r,H-m-g1Paddle.r);
+    } else {
+      g2Paddle.x=clamp(g2Paddle.x,m+g2Paddle.r,W/2-24-g2Paddle.r);
+      g2Paddle.y=clamp(g2Paddle.y,m+g2Paddle.r,H-m-g2Paddle.r);
+      g1Paddle.x=clamp(g1Paddle.x,W/2+24+g1Paddle.r,W-m-g1Paddle.r);
+      g1Paddle.y=clamp(g1Paddle.y,m+g1Paddle.r,H-m-g1Paddle.r);
+    }
+
+    g1Paddle.vx=(g1Paddle.x-prevG1x)/Math.max(dt,0.001);
+    g1Paddle.vy=(g1Paddle.y-prevG1y)/Math.max(dt,0.001);
+    g2Paddle.vx=(g2Paddle.x-prevG2x)/Math.max(dt,0.001);
+    g2Paddle.vy=(g2Paddle.y-prevG2y)/Math.max(dt,0.001);
+
+    if(inCountdown){
+      puck.x = W/2; puck.y = H/2; puck.vx = 0; puck.vy = 0;
+    } else if(isScoring){
+      puck.vx = 0; puck.vy = 0;
+    } else {
+      puck.x+=puck.vx*dt; puck.y+=puck.vy*dt;
+      puck.vx*=.999; puck.vy*=.999;
+    }
+
+    const theme = playerThemes[selectedThemeKey];
+    if(portrait){
+      if(puck.x-puck.r<18){puck.x=18+puck.r;puck.vx*=-1;playWall();addParticles(puck.x,puck.y,theme.color,8);}
+      if(puck.x+puck.r>W-18){puck.x=W-18-puck.r;puck.vx*=-1;playWall();addParticles(puck.x,puck.y,theme.color,8);}
+    } else {
+      if(puck.y-puck.r<18){puck.y=18+puck.r;puck.vy*=-1;playWall();addParticles(puck.x,puck.y,theme.color,8);}
+      if(puck.y+puck.r>H-18){puck.y=H-18-puck.r;puck.vy*=-1;playWall();addParticles(puck.x,puck.y,theme.color,8);}
+    }
+
+    const gs = portrait ? W*.28 : H*.28;
+    let inGoal = portrait ? (puck.x>(W-gs)/2 && puck.x<(W+gs)/2) : (puck.y>(H-gs)/2 && puck.y<(H+gs)/2);
+
+    if(portrait){
+      if(puck.y-puck.r<0 && inGoal){ scoreG1(); return; }
+      if(puck.y+puck.r>H && inGoal){ scoreG2(); return; }
+      if(puck.y-puck.r<0){puck.y=puck.r;puck.vy*=-1;playWall();}
+      if(puck.y+puck.r>H){puck.y=H-puck.r;puck.vy*=-1;playWall();}
+    } else {
+      if(puck.x-puck.r<0 && inGoal){ scoreG1(); return; }
+      if(puck.x+puck.r>W && inGoal){ scoreG2(); return; }
+      if(puck.x-puck.r<0){puck.x=puck.r;puck.vx*=-1;playWall();}
+      if(puck.x+puck.r>W){puck.x=W-puck.r;puck.vx*=-1;playWall();}
+    }
+
+    if(!inCountdown && !isScoring){
+      collidePaddle(g1Paddle,theme.color);
+      collidePaddle(g2Paddle,'#ff2bd6');
+    }
+
+    particles = particles.filter(function(p){ return p.life>0; });
+    for(const p of particles){ p.x+=p.vx; p.y+=p.vy; p.vx*=.98; p.life-=1; }
+    if(flash>0) flash-=1;
+  }
+
+  function drawRink(){
+    ctx.clearRect(0,0,W,H);
+    if(flash>0){ ctx.fillStyle='rgba(255,255,255,'+(0.03*flash)+')'; ctx.fillRect(0,0,W,H); }
+    ctx.save();
+    
+    const theme = playerThemes[selectedThemeKey];
+    ctx.strokeStyle=theme.glow; ctx.lineWidth=3; ctx.shadowColor=theme.color; ctx.shadowBlur=16;
+    roundRect(12,12,W-24,H-24,22,false,true);
+    ctx.beginPath();
+    if(portrait){ ctx.moveTo(0,H/2); ctx.lineTo(W,H/2); } else { ctx.moveTo(W/2,0); ctx.lineTo(W/2,H); }
+    ctx.stroke();
+    ctx.beginPath(); ctx.arc(W/2,H/2,Math.min(W,H)*0.11,0,Math.PI*2); ctx.stroke();
+
+    const gs = portrait ? W*.28 : H*.28;
+    ctx.strokeStyle='rgba(255,43,214,.75)'; ctx.shadowColor='#ff2bd6'; ctx.lineWidth=4;
+    ctx.beginPath();
+    if(portrait){ ctx.moveTo((W-gs)/2,10); ctx.lineTo((W+gs)/2,10); }
+    else{ ctx.moveTo(10,(H-gs)/2); ctx.lineTo(10,(H+gs)/2); }
+    ctx.stroke();
+
+    ctx.strokeStyle=theme.color; ctx.shadowColor=theme.color;
+    ctx.beginPath();
+    if(portrait){ ctx.moveTo((W-gs)/2,H-10); ctx.lineTo((W+gs)/2,H-10); }
+    else{ ctx.moveTo(W-10,(H-gs)/2); ctx.lineTo(W-10,(H+gs)/2); }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawPaddle(x,y,r,color){
+    ctx.save(); ctx.shadowColor=color; ctx.shadowBlur=24;
+    const g=ctx.createRadialGradient(x-r*.3,y-r*.3,r*.25,x,y,r);
+    g.addColorStop(0,'#ffffff'); g.addColorStop(.18,color); g.addColorStop(1,'rgba(255,255,255,.08)');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+    ctx.lineWidth=3; ctx.strokeStyle='rgba(255,255,255,.55)'; ctx.stroke();
+    ctx.beginPath(); ctx.fillStyle='rgba(255,255,255,.18)';
+    ctx.arc(x-r*.25,y-r*.25,r*.25,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawPuck(){
+    const theme = playerThemes[selectedThemeKey];
+    ctx.save(); ctx.shadowColor=theme.color; ctx.shadowBlur=18;
+    const g=ctx.createRadialGradient(puck.x-4,puck.y-4,3,puck.x,puck.y,puck.r);
+    g.addColorStop(0,'#ffffff'); g.addColorStop(.35,theme.color); g.addColorStop(1,'#444444');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(puck.x,puck.y,puck.r,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawParticles(){
+    for(const p of particles){
+      const a=Math.max(0,p.life/p.maxLife);
+      ctx.save(); ctx.globalAlpha=a; ctx.fillStyle=p.color; ctx.shadowColor=p.color; ctx.shadowBlur=10;
+      ctx.beginPath(); ctx.arc(p.x,p.y,2.5,0,Math.PI*2); ctx.fill(); ctx.restore();
+    }
+  }
+
+  function drawCountdown(){
+    if(!countdownText) return;
+    ctx.save();
+    const size = Math.round(Math.min(W,H)*0.22);
+    ctx.font = '900 ' + size + 'px Arial, Helvetica, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    const theme = playerThemes[selectedThemeKey];
+    let glowColor = theme.color;
+    if(countdownText === 'VIA!') glowColor = '#a6ff00';
+    else if(countdownText === 'GOL!') glowColor = '#ff2bd6';
+
+    ctx.shadowColor = glowColor;
+    ctx.shadowBlur = 35;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(countdownText, W/2, H/2);
+    ctx.restore();
+  }
+
+  function roundRect(x,y,w,h,r,fill,stroke){
+    ctx.beginPath(); ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath(); if(fill) ctx.fill(); if(stroke) ctx.stroke();
+  }
+
+  function draw(){
+    drawRink(); drawParticles();
+    const theme = playerThemes[selectedThemeKey];
+    drawPaddle(g2Paddle.x,g2Paddle.y,g2Paddle.r,'#ff2bd6');
+    drawPaddle(g1Paddle.x,g1Paddle.y,g1Paddle.r,theme.color);
+    drawPuck();
+    drawCountdown();
+  }
+
+  function loop(ts){
+    if(!lastTime) lastTime=ts;
+    const dt=Math.min(.022,(ts-lastTime)/1000);
+    lastTime=ts;
+    if(running && !isPaused) update(dt);
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  function togglePause(){
+    if(!running) return;
+    isPaused = !isPaused;
+    if(isPaused){
+      overlay.classList.remove('hidden');
+      overlay.innerHTML = '<h1>IN PAUSA</h1>'+
+        '<p>La partita è momentaneamente in pausa.</p>'+
+        '<div class="btnRow">'+
+        '<button id="resumeBtn">▶ Riprendi</button>'+
+        '<button id="menuBtnP" class="alt">🏠 Menu</button>'+
+        '<button id="audioBtnP" class="green">Audio: '+(audioEnabled?'ON':'OFF')+'</button>'+
+        '</div>';
+      document.getElementById('resumeBtn').onclick = function(){ togglePause(); };
+      document.getElementById('menuBtnP').onclick = function(){ isPaused=false; showMenu(); };
+      document.getElementById('audioBtnP').onclick = function(){
+        audioEnabled=!audioEnabled;
+        this.textContent='Audio: '+(audioEnabled?'ON':'OFF');
+        if(audioEnabled) initAudio();
+      };
+    } else {
+      overlay.classList.add('hidden');
+    }
+  }
+
+  function startGame(mode, diff){
+    if(countdownTimer) clearInterval(countdownTimer);
+    initAudio();
+    gameMode = mode;
+    if(mode==='1p' && diff) aiDifficulty = diff;
+    state.g1=0; state.g2=0;
+    isScoring=false; isPaused=false; inCountdown=false; countdownText="";
+    stuckTimer=0; stuckNudgeTimer=0; isRetreating=false; retreatTimer=0;
+
+    const diffNames = { easy:'Facile', medium:'Medio', hard:'Difficile' };
+
+    if(mode==='1p'){
+      scoreG1El.textContent='0 TU';
+      scoreG2El.textContent=`CPU (${diffNames[aiDifficulty]}) 0`;
+    } else {
+      scoreG1El.textContent='0 G1';
+      scoreG2El.textContent='G2 0';
+    }
+    pointerOwners.clear();
+    overlay.classList.add('hidden');
+    const initialServe = Math.random()>0.5;
+    resetPositions(initialServe);
+    running=true;
+    startCountdown(function(){
+      launchPuck(initialServe);
+    });
+  }
+
+  function showMenu(){
+    if(countdownTimer) clearInterval(countdownTimer);
+    running=false; isPaused=false; isScoring=false; inCountdown=false; countdownText="";
+    gameMode=null; state.g1=0; state.g2=0;
+    scoreG1El.textContent='0 TU'; scoreG2El.textContent='G2 0';
+    overlay.classList.remove('hidden');
+
+    const theme = playerThemes[selectedThemeKey];
+    overlay.innerHTML = '<h1>NEON HOCKEY</h1>'+
+      '<p>Scegli la modalità di gioco.</p><p>La partita finisce a 7 gol.</p>'+
+      '<div class="modeBtns">'+
+      '<button id="btn1p">1 Giocatore (vs CPU)</button>'+
+      '<button id="btn2p" class="alt">2 Giocatori</button>'+
+      '<button id="colorBtn" style="background:linear-gradient(90deg,'+theme.color+',#ffffff);color:#03131f;">🎨 Tema: '+theme.name+'</button>'+
+      '<button id="audioBtn3" class="green">Audio: '+(audioEnabled?'ON':'OFF')+'</button>'+
+      '</div>';
+
+    document.getElementById('btn1p').onclick = showDifficultyMenu;
+    document.getElementById('btn2p').onclick = function(){ startGame('2p'); };
+    document.getElementById('colorBtn').onclick = showColorMenu;
+    document.getElementById('audioBtn3').onclick = function(){
+      audioEnabled=!audioEnabled;
+      this.textContent='Audio: '+(audioEnabled?'ON':'OFF');
+      if(audioEnabled) initAudio();
+    };
+  }
+
+  function showDifficultyMenu(){
+    overlay.classList.remove('hidden');
+    overlay.innerHTML = '<h1>1 GIOCATORE</h1>'+
+      '<p>Seleziona la difficoltà della CPU:</p>'+
+      '<div class="modeBtns">'+
+      '<button id="btnEasy">🟢 Facile</button>'+
+      '<button id="btnMed" class="alt">🟡 Medio</button>'+
+      '<button id="btnHard">🔴 Difficile</button>'+
+      '<button id="btnBack" style="background:rgba(255,255,255,0.15);color:#fff;margin-top:4px;">← Indietro</button>'+
+      '</div>';
+    document.getElementById('btnEasy').onclick = function(){ startGame('1p', 'easy'); };
+    document.getElementById('btnMed').onclick = function(){ startGame('1p', 'medium'); };
+    document.getElementById('btnHard').onclick = function(){ startGame('1p', 'hard'); };
+    document.getElementById('btnBack').onclick = showMenu;
+  }
+
+  function showColorMenu(){
+    overlay.classList.remove('hidden');
+    let themeBtns = '';
+    const keys = Object.keys(playerThemes);
+    for(const key of keys){
+      const th = playerThemes[key];
+      const isSel = key === selectedThemeKey ? ' ✓' : '';
+      themeBtns += '<button style="background:'+th.color+';color:#03131f;min-width:210px;" onclick="window.selectTheme(\''+key+'\')">'+th.name+isSel+'</button>';
+    }
+    overlay.innerHTML = '<h1>TEMA E COLORE</h1>'+
+      '<p>Scegli il tuo colore e l\'atmosfera del campo:</p>'+
+      '<div class="modeBtns">'+
+      themeBtns +
+      '<button id="btnBackC" style="background:rgba(255,255,255,0.15);color:#fff;margin-top:4px;">← Indietro</button>'+
+      '</div>';
+    document.getElementById('btnBackC').onclick = showMenu;
+  }
+
+  window.selectTheme = function(key){
+    selectedThemeKey = key;
+    applyRinkTheme();
+    showMenu();
+  };
+
+  function assignPointer(pid,cx,cy){
+    if(isPaused) return;
+    const rect=canvas.getBoundingClientRect();
+    const x=cx-rect.left, y=cy-rect.top, m=30;
+    if(gameMode==='1p'){
+      pointerOwners.set(pid,'g1');
+      if(portrait){
+        g1Paddle.tx=clamp(x,m+g1Paddle.r,W-m-g1Paddle.r);
+        g1Paddle.ty=clamp(y,H/2+24+g1Paddle.r,H-m-g1Paddle.r);
+      } else {
+        g1Paddle.tx=clamp(x,W/2+24+g1Paddle.r,W-m-g1Paddle.r);
+        g1Paddle.ty=clamp(y,m+g1Paddle.r,H-m-g1Paddle.r);
+      }
+    } else {
+      if(portrait){
+        if(y<H/2){
+          pointerOwners.set(pid,'g2');
+          g2Paddle.tx=clamp(x,m+g2Paddle.r,W-m-g2Paddle.r);
+          g2Paddle.ty=clamp(y,m+g2Paddle.r,H/2-24-g2Paddle.r);
+        } else {
+          pointerOwners.set(pid,'g1');
+          g1Paddle.tx=clamp(x,m+g1Paddle.r,W-m-g1Paddle.r);
+          g1Paddle.ty=clamp(y,H/2+24+g1Paddle.r,H-m-g1Paddle.r);
+        }
+      } else {
+        if(x<W/2){
+          pointerOwners.set(pid,'g2');
+          g2Paddle.tx=clamp(x,m+g2Paddle.r,W/2-24-g2Paddle.r);
+          g2Paddle.ty=clamp(y,m+g2Paddle.r,H-m-g2Paddle.r);
+        } else {
+          pointerOwners.set(pid,'g1');
+          g1Paddle.tx=clamp(x,W/2+24+g1Paddle.r,W-m-g1Paddle.r);
+          g1Paddle.ty=clamp(y,m+g1Paddle.r,H-m-g1Paddle.r);
+        }
+      }
+    }
+  }
+
+  function movePointer(pid,cx,cy){
+    if(isPaused) return;
+    const owner=pointerOwners.get(pid);
+    if(!owner){ assignPointer(pid,cx,cy); return; }
+    const rect=canvas.getBoundingClientRect();
+    const x=cx-rect.left, y=cy-rect.top, m=30;
+    if(owner==='g1'){
+      if(portrait){
+        g1Paddle.tx=clamp(x,m+g1Paddle.r,W-m-g1Paddle.r);
+        g1Paddle.ty=clamp(y,H/2+24+g1Paddle.r,H-m-g1Paddle.r);
+      } else {
+        g1Paddle.tx=clamp(x,W/2+24+g1Paddle.r,W-m-g1Paddle.r);
+        g1Paddle.ty=clamp(y,m+g1Paddle.r,H-m-g1Paddle.r);
+      }
+    } else if(owner==='g2' && gameMode==='2p'){
+      if(portrait){
+        g2Paddle.tx=clamp(x,m+g2Paddle.r,W-m-g2Paddle.r);
+        g2Paddle.ty=clamp(y,m+g2Paddle.r,H/2-24-g2Paddle.r);
+      } else {
+        g2Paddle.tx=clamp(x,m+g2Paddle.r,W/2-24-g2Paddle.r);
+        g2Paddle.ty=clamp(y,m+g2Paddle.r,H-m-g2Paddle.r);
+      }
+    }
+  }
+
+  canvas.addEventListener('pointerdown',function(e){
+    canvas.setPointerCapture(e.pointerId);
+    assignPointer(e.pointerId,e.clientX,e.clientY);
+    if(!running) initAudio();
+  });
+  canvas.addEventListener('pointermove',function(e){ movePointer(e.pointerId,e.clientX,e.clientY); });
+  canvas.addEventListener('pointerup',function(e){ pointerOwners.delete(e.pointerId); });
+  canvas.addEventListener('pointercancel',function(e){ pointerOwners.delete(e.pointerId); });
+
+  window.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' || e.code === 'Escape'){
+      togglePause();
+    }
+  });
+
+  document.getElementById('btn1p').onclick = showDifficultyMenu;
+  document.getElementById('btn2p').onclick = function(){ startGame('2p'); };
+  document.getElementById('colorBtn').onclick = showColorMenu;
+  document.getElementById('audioBtn').onclick = function(){
+    audioEnabled=!audioEnabled;
+    this.textContent='Audio: '+(audioEnabled?'ON':'OFF');
+    if(audioEnabled) initAudio();
+  };
+
+  window.addEventListener('resize',resize);
+  window.addEventListener('orientationchange',function(){ setTimeout(resize,100); });
+
+  resize();
+  draw();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
