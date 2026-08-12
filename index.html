@@ -34,40 +34,50 @@
   .hud{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:2;}
   
   .hudTopRow{
-    position:absolute;top:10px;left:10px;right:10px;
-    display:flex;justify-content:space-between;align-items:center;
+    position:absolute;top:8px;left:8px;right:8px;
+    display:flex;justify-content:space-between;align-items:center;gap:6px;
     pointer-events:none;z-index:2;
   }
   .hudBadge{
     background:rgba(4,8,22,0.85);border:1px solid rgba(0,229,255,0.4);
-    border-radius:999px;padding:6px 14px;font-size:clamp(11px,1.3vw,15px);
+    border-radius:999px;padding:5px 12px;font-size:clamp(10px,1.2vw,14px);
     font-weight:700;color:var(--cyan);backdrop-filter:blur(8px);
     box-shadow:0 0 12px rgba(0,229,255,0.22);white-space:nowrap;pointer-events:auto;cursor:pointer;
     transition:transform 0.15s, border-color 0.2s;
   }
   .hudBadge:hover{transform:scale(1.04);}
   
+  .hudRightControls{
+    display:flex;align-items:center;gap:6px;pointer-events:auto;
+  }
   .hudPts{
     background:rgba(4,8,22,0.85);border:1px solid rgba(255,215,0,0.45);
-    border-radius:999px;padding:6px 14px;font-size:clamp(11px,1.3vw,15px);
+    border-radius:999px;padding:5px 12px;font-size:clamp(10px,1.2vw,14px);
     font-weight:800;color:#ffd700;backdrop-filter:blur(8px);
     box-shadow:0 0 14px rgba(255,215,0,0.25);white-space:nowrap;
   }
+  .pauseBtn{
+    background:rgba(4,8,22,0.88);border:1px solid rgba(0,229,255,0.45);
+    border-radius:999px;padding:5px 12px;font-size:14px;font-weight:800;
+    color:var(--cyan);backdrop-filter:blur(8px);box-shadow:0 0 12px rgba(0,229,255,0.3);
+    cursor:pointer;pointer-events:auto;transition:transform 0.15s ease, background 0.15s ease;
+  }
+  .pauseBtn:active{transform:scale(0.92);}
 
   .scoreboard{
     position:relative;
-    display:flex;align-items:center;gap:12px;
+    display:flex;align-items:center;gap:8px;
     background:rgba(4,8,22,0.78);border:1px solid rgba(0,229,255,0.35);
-    border-radius:999px;padding:6px 20px;backdrop-filter:blur(8px);
+    border-radius:999px;padding:5px 16px;backdrop-filter:blur(8px);
     box-shadow:0 0 18px rgba(0,229,255,0.22);
   }
   .score{
-    font-size:clamp(14px,2.1vw,24px);font-weight:800;letter-spacing:1px;
+    font-size:clamp(12px,1.8vw,22px);font-weight:800;letter-spacing:1px;
     text-shadow:0 0 12px currentColor;white-space:nowrap;
   }
   .score.g1{color:var(--cyan)}
   .score.g2{color:var(--pink)}
-  .scoreDivider{font-size:clamp(14px,2vw,22px);color:rgba(255,255,255,0.35);font-weight:700;}
+  .scoreDivider{font-size:clamp(12px,1.8vw,20px);color:rgba(255,255,255,0.35);font-weight:700;}
 
   .overlay{
     position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:3;
@@ -184,7 +194,10 @@
           <div class="scoreDivider">-</div>
           <div class="score g1" id="scoreG1El">0 TU</div>
         </div>
-        <div class="hudPts" id="hudPtsBox"><span id="hudPtsVal">0</span> <span style="font-size:0.75em;opacity:0.85;">PTS</span></div>
+        <div class="hudRightControls">
+          <div class="hudPts" id="hudPtsBox"><span id="hudPtsVal">0</span> <span style="font-size:0.75em;opacity:0.85;">PTS</span></div>
+          <button id="pauseBtn" class="pauseBtn" title="Metti in Pausa">⏸️ Pausa</button>
+        </div>
       </div>
     </div>
     <div id="overlay" class="overlay">
@@ -198,7 +211,7 @@
         <button id="audioBtn" class="green">Audio: ON</button>
       </div>
     </div>
-    <div class="note">Premi ESC per mettere in pausa • Multitouch attivo</div>
+    <div class="note">Premi ⏸️ o ESC per mettere in pausa • Multitouch attivo</div>
   </div>
 </div>
 <script>
@@ -363,17 +376,23 @@
       const alpha = Math.min(1, ft.life / (ft.maxLife * 0.35));
       ctx.save();
       ctx.globalAlpha = Math.max(0, alpha);
-      const size = Math.round(Math.min(W, H) * 0.038 * ft.scale);
-      ctx.font = '900 ' + Math.max(14, size) + 'px Arial, Helvetica, sans-serif';
+      const size = Math.round(Math.min(W, H) * 0.036 * ft.scale);
+      ctx.font = '900 ' + Math.max(13, size) + 'px Arial, Helvetica, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
+
+      const textWidthEst = ctx.measureText(ft.text).width || 100;
+      const marginX = textWidthEst / 2 + 10;
+      const clampedX = clamp(ft.x, marginX, W - marginX);
+      const clampedY = clamp(ft.y, 45, H - 24);
+
       ctx.shadowColor = ft.color;
-      ctx.shadowBlur = 14;
+      ctx.shadowBlur = 12;
       ctx.fillStyle = '#ffffff';
       ctx.strokeStyle = ft.color;
       ctx.lineWidth = 3.5;
-      ctx.strokeText(ft.text, ft.x, ft.y);
-      ctx.fillText(ft.text, ft.x, ft.y);
+      ctx.strokeText(ft.text, clampedX, clampedY);
+      ctx.fillText(ft.text, clampedX, clampedY);
       ctx.restore();
     }
   }
@@ -1332,6 +1351,7 @@
     }
   });
 
+  document.getElementById('pauseBtn').onclick = togglePause;
   document.getElementById('btn1p').onclick = showDifficultyMenu;
   document.getElementById('btn2p').onclick = function(){ startGame('2p'); };
   document.getElementById('profileBtn').onclick = showProfileMenu;
