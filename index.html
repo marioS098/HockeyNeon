@@ -79,17 +79,88 @@
   .score.g2{color:var(--pink)}
   .scoreDivider{font-size:clamp(12px,1.8vw,20px);color:rgba(255,255,255,0.35);font-weight:700;}
 
+  /* Modern Neon Glassmorphism Overlay */
   .overlay{
     position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:3;
-    min-width:min(88vw,540px);max-width:92%;max-height:90vh;overflow-y:auto;text-align:center;
-    background:rgba(2,6,18,.88);border:1px solid rgba(0,229,255,.3);border-radius:20px;
-    padding:20px 22px;backdrop-filter:blur(14px);box-shadow:0 0 30px rgba(0,229,255,.25);
+    min-width:min(90vw,500px);width:min(90vw,500px);max-height:88vh;overflow-y:auto;text-align:center;
+    background:radial-gradient(circle at 50% 0%, rgba(0,229,255,0.12), transparent 70%), rgba(3,8,22,0.92);
+    border:1.5px solid rgba(0,229,255,0.45);border-radius:24px;
+    padding:22px 18px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    box-shadow:0 0 25px rgba(0,229,255,0.25), 0 10px 40px rgba(0,0,0,0.6), inset 0 0 15px rgba(0,229,255,0.1);
   }
-  .overlay::-webkit-scrollbar{width:6px;}
-  .overlay::-webkit-scrollbar-thumb{background:rgba(0,229,255,0.4);border-radius:3px;}
+  .overlay::-webkit-scrollbar{width:5px;}
+  .overlay::-webkit-scrollbar-thumb{background:rgba(0,229,255,0.5);border-radius:4px;}
 
-  .overlay h1{margin:0 0 8px;font-size:clamp(24px,3.8vw,48px);color:var(--cyan);text-shadow:0 0 14px var(--cyan),0 0 30px var(--cyan);}
-  .overlay p{margin:6px 0;font-size:clamp(12px,1.5vw,18px);color:#d9f7ff;}
+  /* Neon Title Header */
+  .menuTitleBox{margin-bottom:12px;}
+  .menuTitle{
+    margin:0;font-size:clamp(28px,5vw,46px);font-weight:900;letter-spacing:2px;
+    background:linear-gradient(135deg, #00e5ff 0%, #ffffff 50%, #ff2bd6 100%);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    filter:drop-shadow(0 0 12px rgba(0,229,255,0.6));
+    animation:neonPulse 3s infinite alternate ease-in-out;
+  }
+  @keyframes neonPulse{
+    0%{filter:drop-shadow(0 0 10px rgba(0,229,255,0.5));}
+    50%{filter:drop-shadow(0 0 18px rgba(255,43,214,0.7));}
+    100%{filter:drop-shadow(0 0 12px rgba(0,229,255,0.5));}
+  }
+  .menuSubTitle{
+    margin:4px 0 0;font-size:clamp(10px,1.3vw,13px);font-weight:700;
+    color:#a6ff00;letter-spacing:1px;text-transform:uppercase;opacity:0.9;
+  }
+
+  /* Main Action Cards & Grids */
+  .mainMenuGrid{
+    display:flex;flex-direction:column;gap:10px;margin-top:12px;width:100%;pointer-events:auto;
+  }
+  .menuHeroBtn{
+    display:flex;align-items:center;justify-content:space-between;
+    width:100%;padding:14px 18px;border-radius:18px;border:1.5px solid rgba(0,229,255,0.5);
+    background:linear-gradient(135deg, rgba(0,229,255,0.2), rgba(4,14,36,0.85));
+    color:#ffffff;font-size:15px;font-weight:800;cursor:pointer;
+    box-shadow:0 0 15px rgba(0,229,255,0.2), inset 0 0 10px rgba(0,229,255,0.1);
+    transition:transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  }
+  .menuHeroBtn:active{transform:scale(0.97);}
+  .menuHeroBtn.pink{
+    border-color:rgba(255,43,214,0.5);
+    background:linear-gradient(135deg, rgba(255,43,214,0.2), rgba(30,6,26,0.85));
+    box-shadow:0 0 15px rgba(255,43,214,0.2), inset 0 0 10px rgba(255,43,214,0.1);
+  }
+  .menuHeroBtnLeft{display:flex;align-items:center;gap:12px;text-align:left;}
+  .menuHeroIcon{font-size:24px;}
+  .menuHeroTitle{font-size:15px;font-weight:800;line-height:1.2;}
+  .menuHeroSub{font-size:11px;font-weight:600;opacity:0.75;margin-top:2px;}
+  .menuHeroArrow{font-size:16px;opacity:0.8;}
+
+  /* 2-Column Mobile Sub-Buttons */
+  .menuSubGrid{
+    display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:2px;width:100%;
+  }
+  .menuSubBtn{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:12px 10px;border-radius:16px;border:1px solid rgba(255,255,255,0.18);
+    background:rgba(255,255,255,0.06);color:#eefcff;font-size:13px;font-weight:700;
+    cursor:pointer;backdrop-filter:blur(8px);
+    transition:transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+  }
+  .menuSubBtn:active{transform:scale(0.96);}
+  .menuSubBtn.gold{border-color:rgba(255,215,0,0.5);background:rgba(255,215,0,0.12);color:#ffd700;}
+  .menuSubBtn.green{border-color:rgba(166,255,0,0.4);background:rgba(166,255,0,0.1);color:#a6ff00;}
+  .menuSubBtnIcon{font-size:18px;margin-bottom:3px;}
+  .menuSubBtnText{font-size:12px;font-weight:700;line-height:1.2;}
+
+  /* Back Button Styling */
+  .btnBackNav{
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    width:100%;margin-top:10px;padding:12px 20px;border-radius:999px;
+    border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);
+    color:#eefcff;font-size:14px;font-weight:700;cursor:pointer;
+    transition:transform 0.15s ease, background 0.15s ease;
+  }
+  .btnBackNav:active{transform:scale(0.96);}
+
   .btnRow{margin-top:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;pointer-events:auto;}
   button{
     border:none;border-radius:999px;padding:12px 20px;font-size:15px;font-weight:700;cursor:pointer;
@@ -106,8 +177,6 @@
     font-size:clamp(11px,1.3vw,16px);color:rgba(234,252,255,.7);padding:0 10px;pointer-events:none;
   }
   .hidden{display:none}
-  .modeBtns{display:flex;flex-direction:column;gap:10px;align-items:center;margin-top:12px;pointer-events:auto;}
-  .modeBtns button{font-size:16px;padding:12px 24px;min-width:240px;}
 
   /* Post Match & Profile Styles */
   .pmStatsGrid{
@@ -201,14 +270,48 @@
       </div>
     </div>
     <div id="overlay" class="overlay">
-      <h1>NEON HOCKEY</h1>
-      <p>Scegli la modalità di gioco.</p><p>La partita finisce a 7 gol.</p>
-      <div class="modeBtns">
-        <button id="btn1p">1 Giocatore (vs CPU)</button>
-        <button id="btn2p" class="alt">2 Giocatori</button>
-        <button id="profileBtn" class="gold">🏆 Profilo & Livelli</button>
-        <button id="colorBtn">🎨 Personalizza Neon</button>
-        <button id="audioBtn" class="green">Audio: ON</button>
+      <div class="menuTitleBox">
+        <h1 class="menuTitle">NEON HOCKEY</h1>
+        <div class="menuSubTitle">⚡ AIR HOCKEY • OBIETTIVO 7 GOL</div>
+      </div>
+      <div class="mainMenuGrid">
+        <button id="btn1p" class="menuHeroBtn">
+          <div class="menuHeroBtnLeft">
+            <span class="menuHeroIcon">🕹️</span>
+            <div>
+              <div class="menuHeroTitle">1 Giocatore</div>
+              <div class="menuHeroSub">Sfida la CPU e scala i livelli XP</div>
+            </div>
+          </div>
+          <span class="menuHeroArrow">➔</span>
+        </button>
+
+        <button id="btn2p" class="menuHeroBtn pink">
+          <div class="menuHeroBtnLeft">
+            <span class="menuHeroIcon">👥</span>
+            <div>
+              <div class="menuHeroTitle">2 Giocatori</div>
+              <div class="menuHeroSub">Sfida un amico sullo stesso schermo</div>
+            </div>
+          </div>
+          <span class="menuHeroArrow">➔</span>
+        </button>
+
+        <div class="menuSubGrid">
+          <button id="profileBtn" class="menuSubBtn gold">
+            <span class="menuSubBtnIcon">🏆</span>
+            <span class="menuSubBtnText">Profilo & Livelli</span>
+          </button>
+          
+          <button id="colorBtn" class="menuSubBtn">
+            <span class="menuSubBtnIcon">🎨</span>
+            <span class="menuSubBtnText">Garage Neon</span>
+          </button>
+        </div>
+
+        <button id="audioBtn" class="menuSubBtn green" style="width:100%;">
+          <span class="menuSubBtnText">🔊 Audio: ON</span>
+        </button>
       </div>
     </div>
     <div class="note">Premi ⏸️ o ESC per mettere in pausa • Multitouch attivo</div>
@@ -1080,18 +1183,36 @@
     isPaused = !isPaused;
     if(isPaused){
       overlay.classList.remove('hidden');
-      overlay.innerHTML = '<h1>IN PAUSA</h1>'+
-        '<p>La partita è momentaneamente in pausa.</p>'+
-        '<div class="btnRow">'+
-        '<button id="resumeBtn">▶ Riprendi</button>'+
-        '<button id="menuBtnP" class="alt">🏠 Menu</button>'+
-        '<button id="audioBtnP" class="green">Audio: '+(audioEnabled?'ON':'OFF')+'</button>'+
-        '</div>';
+      overlay.innerHTML = `
+        <div class="menuTitleBox">
+          <h1 class="menuTitle" style="font-size:clamp(24px,4vw,36px);">IN PAUSA</h1>
+          <div class="menuSubTitle">La partita è momentaneamente in pausa</div>
+        </div>
+
+        <div class="mainMenuGrid">
+          <button id="resumeBtn" class="menuHeroBtn" style="border-color:#00e5ff;background:linear-gradient(135deg,rgba(0,229,255,0.25),rgba(4,14,36,0.85));">
+            <div class="menuHeroBtnLeft">
+              <span class="menuHeroIcon">▶️</span>
+              <div>
+                <div class="menuHeroTitle" style="color:#00e5ff;">Riprendi Partita</div>
+                <div class="menuHeroSub">Continua la sfida dal punteggio attuale</div>
+              </div>
+            </div>
+            <span class="menuHeroArrow">➔</span>
+          </button>
+
+          <button id="audioBtnP" class="menuSubBtn green" style="width:100%;">
+            <span class="menuSubBtnText">${audioEnabled ? '🔊 Audio: ATTIVO' : '🔇 Audio: DISATTIVATO'}</span>
+          </button>
+
+          <button id="menuBtnP" class="btnBackNav">🏠 Menu Principale</button>
+        </div>
+      `;
       document.getElementById('resumeBtn').onclick = function(){ togglePause(); };
       document.getElementById('menuBtnP').onclick = function(){ isPaused=false; showMenu(); };
       document.getElementById('audioBtnP').onclick = function(){
         audioEnabled=!audioEnabled;
-        this.textContent='Audio: '+(audioEnabled?'ON':'OFF');
+        this.textContent = audioEnabled ? '🔊 Audio: ATTIVO' : '🔇 Audio: DISATTIVATO';
         if(audioEnabled) initAudio();
       };
     } else {
@@ -1142,14 +1263,49 @@
     const lvlInfo = getLevelInfo(playerXP);
 
     overlay.innerHTML = `
-      <h1>NEON HOCKEY</h1>
-      <p>Scegli la modalità di gioco.</p><p>La partita finisce a 7 gol.</p>
-      <div class="modeBtns">
-        <button id="btn1p">1 Giocatore (vs CPU)</button>
-        <button id="btn2p" class="alt">2 Giocatori</button>
-        <button id="profileBtn" class="gold">🏆 Livello: ${lvlInfo.currentLevel.badge} ${lvlInfo.currentLevel.name}</button>
-        <button id="colorBtn" style="background:linear-gradient(90deg,${theme.color},#ffffff);color:#03131f;">🎨 Tema: ${theme.name}</button>
-        <button id="audioBtn3" class="green">Audio: ${audioEnabled?'ON':'OFF'}</button>
+      <div class="menuTitleBox">
+        <h1 class="menuTitle">NEON HOCKEY</h1>
+        <div class="menuSubTitle">⚡ AIR HOCKEY • OBIETTIVO 7 GOL</div>
+      </div>
+
+      <div class="mainMenuGrid">
+        <button id="btn1p" class="menuHeroBtn">
+          <div class="menuHeroBtnLeft">
+            <span class="menuHeroIcon">🕹️</span>
+            <div>
+              <div class="menuHeroTitle">1 Giocatore</div>
+              <div class="menuHeroSub">Sfida la CPU e scala i livelli XP</div>
+            </div>
+          </div>
+          <span class="menuHeroArrow">➔</span>
+        </button>
+
+        <button id="btn2p" class="menuHeroBtn pink">
+          <div class="menuHeroBtnLeft">
+            <span class="menuHeroIcon">👥</span>
+            <div>
+              <div class="menuHeroTitle">2 Giocatori</div>
+              <div class="menuHeroSub">Sfida un amico sullo stesso schermo</div>
+            </div>
+          </div>
+          <span class="menuHeroArrow">➔</span>
+        </button>
+
+        <div class="menuSubGrid">
+          <button id="profileBtn" class="menuSubBtn gold">
+            <span class="menuSubBtnIcon">🏆</span>
+            <span class="menuSubBtnText">${lvlInfo.currentLevel.badge} Liv. ${lvlInfo.currentLevel.level}</span>
+          </button>
+          
+          <button id="colorBtn" class="menuSubBtn" style="border-color:${theme.color};color:${theme.color};">
+            <span class="menuSubBtnIcon">🎨</span>
+            <span class="menuSubBtnText">Garage Neon</span>
+          </button>
+        </div>
+
+        <button id="audioBtn3" class="menuSubBtn green" style="width:100%;">
+          <span class="menuSubBtnText">${audioEnabled ? '🔊 Audio: ATTIVO' : '🔇 Audio: DISATTIVATO'}</span>
+        </button>
       </div>
     `;
 
@@ -1159,21 +1315,56 @@
     document.getElementById('colorBtn').onclick = showCustomizationMenu;
     document.getElementById('audioBtn3').onclick = function(){
       audioEnabled=!audioEnabled;
-      this.textContent='Audio: '+(audioEnabled?'ON':'OFF');
+      this.textContent = audioEnabled ? '🔊 Audio: ATTIVO' : '🔇 Audio: DISATTIVATO';
       if(audioEnabled) initAudio();
     };
   }
 
   function showDifficultyMenu(){
     overlay.classList.remove('hidden');
-    overlay.innerHTML = '<h1>1 GIOCATORE</h1>'+
-      '<p>Seleziona la difficoltà della CPU:</p>'+
-      '<div class="modeBtns">'+
-      '<button id="btnEasy">🟢 Facile</button>'+
-      '<button id="btnMed" class="alt">🟡 Medio</button>'+
-      '<button id="btnHard">🔴 Difficile</button>'+
-      '<button id="btnBack" style="background:rgba(255,255,255,0.15);color:#fff;margin-top:4px;">← Indietro</button>'+
-      '</div>';
+    overlay.innerHTML = `
+      <div class="menuTitleBox">
+        <h1 class="menuTitle" style="font-size:clamp(22px,4vw,34px);">DIFFICOLTÀ CPU</h1>
+        <div class="menuSubTitle">Seleziona il livello di sfida</div>
+      </div>
+
+      <div class="mainMenuGrid">
+        <button id="btnEasy" class="menuHeroBtn" style="border-color:#a6ff00;background:linear-gradient(135deg,rgba(166,255,0,0.18),rgba(4,14,36,0.85));">
+          <div class="menuHeroBtnLeft">
+            <span class="menuHeroIcon">🟢</span>
+            <div>
+              <div class="menuHeroTitle" style="color:#a6ff00;">Facile</div>
+              <div class="menuHeroSub">Ideale per iniziare e fare pratica</div>
+            </div>
+          </div>
+          <span class="menuHeroArrow">➔</span>
+        </button>
+
+        <button id="btnMed" class="menuHeroBtn" style="border-color:#ffd700;background:linear-gradient(135deg,rgba(255,215,0,0.18),rgba(4,14,36,0.85));">
+          <div class="menuHeroBtnLeft">
+            <span class="menuHeroIcon">🟡</span>
+            <div>
+              <div class="menuHeroTitle" style="color:#ffd700;">Medio</div>
+              <div class="menuHeroSub">Partita equilibrata e avvincente</div>
+            </div>
+          </div>
+          <span class="menuHeroArrow">➔</span>
+        </button>
+
+        <button id="btnHard" class="menuHeroBtn" style="border-color:#ff2255;background:linear-gradient(135deg,rgba(255,34,85,0.18),rgba(4,14,36,0.85));">
+          <div class="menuHeroBtnLeft">
+            <span class="menuHeroIcon">🔴</span>
+            <div>
+              <div class="menuHeroTitle" style="color:#ff2255;">Difficile</div>
+              <div class="menuHeroSub">Sfida estrema con reattività massima</div>
+            </div>
+          </div>
+          <span class="menuHeroArrow">➔</span>
+        </button>
+
+        <button id="btnBack" class="btnBackNav">← Torna al Menu</button>
+      </div>
+    `;
     document.getElementById('btnEasy').onclick = function(){ startGame('1p', 'easy'); };
     document.getElementById('btnMed').onclick = function(){ startGame('1p', 'medium'); };
     document.getElementById('btnHard').onclick = function(){ startGame('1p', 'hard'); };
@@ -1199,7 +1390,11 @@
 
     overlay.classList.remove('hidden');
     overlay.innerHTML = `
-      <h1>PROFILO GIOCATORE</h1>
+      <div class="menuTitleBox">
+        <h1 class="menuTitle" style="font-size:clamp(22px,4vw,34px);">PROFILO GIOCATORE</h1>
+        <div class="menuSubTitle">Statistiche e Livello Attuale</div>
+      </div>
+
       <div class="profileSection">
         <div class="profileHeader">
           <div class="profileAvatar">${info.currentLevel.badge}</div>
@@ -1220,9 +1415,7 @@
       <div class="lvlList">
         ${lvlItemsHtml}
       </div>
-      <div class="btnRow">
-        <button id="btnBackP" style="background:rgba(255,255,255,0.18);color:#fff;margin-top:6px;">← Indietro</button>
-      </div>
+      <button id="btnBackP" class="btnBackNav">← Torna al Menu</button>
     `;
     document.getElementById('btnBackP').onclick = showMenu;
   }
@@ -1248,14 +1441,15 @@
     }
 
     overlay.innerHTML = `
-      <h1>GARAGE NEON</h1>
-      <p>Scegli i tuoi colori e l'atmosfera del campo (sbloccabili salendo di livello):</p>
+      <div class="menuTitleBox">
+        <h1 class="menuTitle" style="font-size:clamp(22px,4vw,34px);">GARAGE NEON</h1>
+        <div class="menuSubTitle">Colori ed Atmosfere sbloccabili con XP</div>
+      </div>
+
       <div class="garageGrid">
         ${themeBtns}
       </div>
-      <div class="btnRow">
-        <button id="btnBackC" style="background:rgba(255,255,255,0.18);color:#fff;margin-top:8px;">← Indietro</button>
-      </div>
+      <button id="btnBackC" class="btnBackNav">← Torna al Menu</button>
     `;
     document.getElementById('btnBackC').onclick = showMenu;
   }
@@ -1352,15 +1546,7 @@
   });
 
   document.getElementById('pauseBtn').onclick = togglePause;
-  document.getElementById('btn1p').onclick = showDifficultyMenu;
-  document.getElementById('btn2p').onclick = function(){ startGame('2p'); };
-  document.getElementById('profileBtn').onclick = showProfileMenu;
-  document.getElementById('colorBtn').onclick = showCustomizationMenu;
-  document.getElementById('audioBtn').onclick = function(){
-    audioEnabled=!audioEnabled;
-    this.textContent='Audio: '+(audioEnabled?'ON':'OFF');
-    if(audioEnabled) initAudio();
-  };
+  showMenu();
 
   window.addEventListener('resize',resize);
   window.addEventListener('orientationchange',function(){ setTimeout(resize,100); });
